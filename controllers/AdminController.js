@@ -1,31 +1,43 @@
 import Item from '../models/Item'
-const create = (req, res) => {
-    const { name, Description, adminId } = req.body;
-    var item = new Item({
-        Name: name,
-        Description: Description,
-        expiry: Date.now(),
-        adminId: adminId,
-    })
-    item.save((err, item) => {
-        if (err) return res.send(err);
-        return res.json(item);
-    })
+import { create, get } from '../services/adminService'
+
+export const createItem = (req, res) => {
+
+    create(req.body).then(
+        onResolve => {
+            return res.status(201).json(onResolve)
+        },
+        onReject => {
+            console.log(onReject)
+            return res.status(400).send("Cannot save the record")
+        }
+    )
+
 }
-const get = async (req, res) => {
-    const items = await Item.find({})
-    return res.send(items)
+
+export const getItems = (req, res) => {
+
+    get().then(
+        onResolve => {
+            return res.status(200).json(onResolve)
+        },
+        onReject => {
+            return res.status(400).send("No record found")
+        }
+    )
 }
-const getById = (req, res) => {
+
+export const getById = (req, res) => {
     const { id } = req.params;
     const item = Item.find({ id: id });
     if (item) return res.json(item);
     return res.send({})
 }
-const update = () => {
+
+export const update = () => {
 
 }
-const del = () => {
+
+export const del = () => {
 
 }
-export { create, get, getById, update, del }
