@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 const ItemSchema = new Schema({
-    Id: String,
-    Name: String,
-    Description: String,
+    name: String,
+    description: String,
     expiry: Date,
     adminId: String,
 });

@@ -1,17 +1,21 @@
 import express from 'express'
+import morgan from 'morgan'
 import loginRoute from './routes/loginRoute'
 import userRoutes from './routes/userRoutes'
 import adminRoutes from './routes/adminRoutes'
+// import Routes from './routes/index'
 import DbConnect from './db/DbConnect'
 import config from 'config'
 
+
 const app = express();
 
-
 // ---Middlewares---
+app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 // --- Routing ---
+// app.use("/", Routes);
 app.use("/api/login", loginRoute);
 app.use("/api/user", userRoutes);
 app.use("/api/adm", adminRoutes);
@@ -27,5 +31,4 @@ DbConnect(DbUri).then(
     app.listen(PORT, () => {
         console.log(`server running on port ${PORT}`);
     })
-
 )

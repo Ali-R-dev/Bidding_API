@@ -1,10 +1,10 @@
 import Item from '../models/Item'
 
-export const createItem = async ({ name, Description, adminId }) => {
+export const createItem = async ({ name, description, adminId }) => {
 
     var item = new Item({
         name: name,
-        description: Description,
+        description: description,
         expiry: Date.now(),
         adminId: adminId,
     })

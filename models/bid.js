@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 const BidSchema = new Schema({
-    Id: String,
-    Price: String,
-    UserId: String,
+    price: String,
+    userId: String,
+    itemId: String,
 });
-export default mongoose.model("Bid", BidSchema, "Bids");
+export default mongoose.model("Bid", BidSchema);
