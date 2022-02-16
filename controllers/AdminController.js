@@ -1,9 +1,15 @@
-import Item from '../models/Item'
-import { create, get } from '../services/adminService'
+import {
+    createItem,
+    getItem,
+    getItemById,
+    updateItem,
+    delItem
+} from '../services/itemService'
 
-export const createItem = (req, res) => {
 
-    create(req.body).then(
+export const create = (req, res) => {
+
+    createItem(req.body).then(
         onResolve => {
             return res.status(201).json(onResolve)
         },
@@ -15,9 +21,9 @@ export const createItem = (req, res) => {
 
 }
 
-export const getItems = (req, res) => {
+export const get = (req, res) => {
 
-    get().then(
+    getItem().then(
         onResolve => {
             return res.status(200).json(onResolve)
         },
@@ -29,15 +35,40 @@ export const getItems = (req, res) => {
 
 export const getById = (req, res) => {
     const { id } = req.params;
-    const item = Item.find({ id: id });
-    if (item) return res.json(item);
-    return res.send({})
+    getItemById(id).then(
+        resolve => {
+
+            return res.status(200).json(resolve)
+        },
+        reject => {
+            return res.status(400).send("No record found")
+        }
+    )
 }
 
-export const update = () => {
+export const update = (req, res) => {
+    const { id } = req.params;
 
+    updateItem(id, req.body).then(
+        resolve => {
+            return res.status(200).json(resolve)
+        },
+        reject => {
+            return res.status(400).send("Cannot update")
+        }
+    )
 }
 
-export const del = () => {
+export const del = (req, res) => {
+    const { id } = req.params;
+    delItem(id).then(
+        resolve => {
+            if (resolve.deletedCount > 0) return res.status(200).json(resolve)
+            return res.status(400).send("No record deleted")
+        },
+        reject => {
+            return res.status(400).send("Cannot delete")
+        }
+    )
 
 }

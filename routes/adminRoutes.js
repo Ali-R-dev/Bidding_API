@@ -1,14 +1,17 @@
 import express from 'express'
-import { getItems, createItem, getById } from '../controllers/AdminController'
+import { get, create, getById, update, del } from '../controllers/AdminController'
 
 
 
 const router = express.Router();
 
 router.route("/items")
-    .get(getItems)
-    .post(createItem);
+    .get(get)
+    .post(create);
 
-router.route("/items/:id").get(getById).post();
+router.route("/items/:id")
+    .get(getById)
+    .put(update)
+    .delete(del);
 
 export default router;

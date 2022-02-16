@@ -1,14 +1,14 @@
 import express from 'express'
+
+
+
+
 const router = express.Router();
 
 router.route("/api/user")
 
-    .get((req, res) => {
-        res.send("response from get user")
-    })
+    .get()
 
-    .post((req, res) => {
-        res.send("response from post user")
-    })
+    .post()
 
 export default router;
