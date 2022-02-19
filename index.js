@@ -17,6 +17,7 @@ const app = express();
 app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
+app.use()
 // --- Routing ---
 app.use("/api/login", loginRoute);
 app.use("/api/user", userRoutes);

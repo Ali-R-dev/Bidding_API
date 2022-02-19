@@ -41,7 +41,7 @@ export const performBid = async (itemId, bidAmount, userId) => {
 
         if (new Date().getTime() > item.auctionEndsAt.getTime()) return Promise.reject("time already ellapsed");
 
-        if (userId == item.currentBid.bidderId) return Promise.reject("You already have higher bid");
+        if (userId == item.currentBid.bidderId) return ("You already have higher bid");
 
         if (bidAmount <= item.currentBid.price && bidAmount <= item.basePrice) return Promise.reject("your bid is less then current bid")
 
@@ -64,10 +64,10 @@ export const toogleAutobid = async (itemId, userId, status) => {
     // get bot
     const bot = await getBotByUserId(userId)
     if (!bot) return Promise.reject("Cant find bot for this user")
+
     let { _id: botId, ItemIdsForAutoBid: itemKeys } = bot;
     // changings
     const index = itemKeys.indexOf(itemId);
-
     if (status === "DEACT") {
         console.log(itemKeys);
         if (index === -1) return bot;
