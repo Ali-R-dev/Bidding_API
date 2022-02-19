@@ -1,11 +1,5 @@
-import {
-    createItem,
-    getItem,
-    getItemById,
-    updateItem,
-    delItem
-} from '../services/itemService'
 
+import { fetchItemsList, createItem, getItemById, updateItem, deleteItem } from '../services/commonServices'
 
 export const create = (req, res) => {
 
@@ -23,7 +17,7 @@ export const create = (req, res) => {
 
 export const get = (req, res) => {
 
-    getItem().then(
+    fetchItemsList().then(
         onResolve => {
             return res.status(200).json(onResolve)
         },
@@ -32,6 +26,7 @@ export const get = (req, res) => {
         }
     )
 }
+
 
 export const getById = (req, res) => {
     const { id } = req.params;
@@ -61,7 +56,7 @@ export const update = (req, res) => {
 
 export const del = (req, res) => {
     const { id } = req.params;
-    delItem(id).then(
+    deleteItem(id).then(
         resolve => {
             if (resolve.deletedCount > 0) return res.status(200).json(resolve)
             return res.status(400).send("No record deleted")
