@@ -16,21 +16,37 @@ export const getBotById = async (id) => {
 }
 
 export const getBotByUserId = async (userId) => {
-    const result = await BidderBot.findOne({ userId })
+    let result = await BidderBot.findOne({ userId: userId })
+    if (result == null) {
+        result = await createBot({
+            userId,
+            maxBalance: 50,
+            notifyAt: 90,
+            ItemIdsForAutoBid: []
+        }
+        )
+    }
     return result;
 }
 
 export const getActiveBots = async () => {
     const result = await BidderBot.find({ ItemIdsForAutoBid: { $ne: [] } })
-    console.log(result);
     return result;
 }
 
 export const updateBot = async (id, bot) => {
-    console.log(bot);
     const result = await BidderBot.updateOne({ _id: id }, { $set: bot }, {
         new: true
     });
+
+    return result;
+}
+
+export const updateBotByUserId = async (userId, bot) => {
+    const result = await BidderBot.updateOne({ userId: userId }, { $set: bot }, {
+        new: true
+    });
+
     return result;
 }
 

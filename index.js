@@ -2,12 +2,14 @@ import morgan from 'morgan'
 import loginRoute from './routes/loginRoute'
 import userRoutes from './routes/userRoutes'
 import adminRoutes from './routes/adminRoutes'
-
+import Cors from 'cors'
 import DbConnect from './db/DbConnect'
 import config from 'config'
+import { Auth } from './Middlewares/Auth'
+import { RunBidderBots } from './services/botService'
 
 
-// const app = express();
+// ---server instance cretion---
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -17,28 +19,41 @@ const app = express();
 app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
-app.use()
+app.use(Cors());
+app.use(Auth)
+
 // --- Routing ---
 app.use("/api/login", loginRoute);
 app.use("/api/user", userRoutes);
 app.use("/api/adm", adminRoutes);
-app.use("*", (req, res) => res.status(404).send("custom not found"));
+app.use("*", (req, res) => res.status(404).send("route not found"));
 // ------
 const httpServer = createServer(app);
-const io = new Server(httpServer, { /* options */ });
+const io = new Server(httpServer, {
+    cors: {
+        origin: "*"
+    }
+});
 
 // ---socket conn---
-io.on("connection", (socket) => {
-    console.log(socket.id);
+// in future---for live update
+io.on("connection", socket => {
+    io.emit('message', ({ message: "hello" }))
 });
 // -------
 
 const PORT = config.get('Server.port');
 const DbUri = config.get('Database.uri');
 
-console.log(PORT)
-DbConnect(DbUri).then(() => {
-    httpServer.listen(3000)
-    console.log(`server running on port ${PORT}`)
-}
+//---if db connects successfully then server starts listening--- 
+DbConnect(DbUri).then(
+    () => {
+        httpServer.listen(PORT)
+        console.log(`server running on port ${PORT}`)
+
+        //--start biider bots ---
+        setTimeout(() => {
+            // RunBidderBots();
+        }, 2000);
+    }
 )

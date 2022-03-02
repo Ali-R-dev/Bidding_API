@@ -7,6 +7,7 @@ const BidderBotSchema = new Schema({
     },
     maxBalance: Number,
     notifyAt: Number,
-    ItemIdsForAutoBid: Array
+    ItemIdsForAutoBid: Array,
+    notifications: []
 });
 export default mongoose.model("BidderBot", BidderBotSchema);

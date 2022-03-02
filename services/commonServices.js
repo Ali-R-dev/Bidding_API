@@ -1,4 +1,5 @@
-import { getBotById, getBotByUserId, getBots, updateBot } from '../DAL/biderBotDbOperations';
+
+import { getBotById, getBotByUserId, getBots, updateBot, updateBotByUserId } from '../DAL/biderBotDbOperations';
 import {
     create,
     get,
@@ -8,21 +9,45 @@ import {
 } from '../DAL/itemDbOperations'
 
 
-export const fetchItemsList = async () => {
-    const result = await get();
-    return result;
+export const fetchItemsList = async (userId, userRole, query) => {
+    const { page, search } = query
+    let result = [];
+    console.log(query);
+    if (userRole === 'admin') {
+        result = await (await get(search)).filter(item => item.adminId == userId);
+    }
+    else {
+        result = await get(search);
+    }
+
+    const pageOptions = {
+        total: 0,
+        current: 0,
+    }
+
+    pageOptions.total = Math.ceil(result.length / 3);
+    pageOptions.current = isNaN(page) || parseInt(page) > pageOptions.total ? 0 : parseInt(page);
+    console.log(pageOptions);
+
+    result = result.splice(pageOptions.current * 3, 3);
+    return [result, pageOptions];
 }
 
 export const createItem = async (itemObj) => {
-    const result = await create(itemObj);
+    const result = await create({ ...itemObj, auctionEndsAt: new Date(itemObj.auctionEndsAt).toUTCString() });
     return result;
 }
 
 export const getItemById = async (id) => {
+
     const result = await getById(id);
     return result;
 }
 export const updateItem = async (id, itemObj) => {
+
+    if (itemObj?.auctionEndsAt) {
+        itemObj.auctionEndsAt = new Date(itemObj.auctionEndsAt).toUTCString()
+    }
     const result = await update(id, itemObj);
     return result;
 }
@@ -35,18 +60,20 @@ export const performBid = async (itemId, bidAmount, userId) => {
     try {
         // get current item
         const item = await getById(itemId);
-
+        console.log(itemId, bidAmount, userId);
         // perform checks
         if (!item) return Promise.reject("cant find item");
-
-        if (new Date().getTime() > item.auctionEndsAt.getTime()) return Promise.reject("time already ellapsed");
+        // --------
+        // console.log(new Date().toUTCString(), new Date(item.auctionEndsAt).toUTCString());
+        // -----
+        if (new Date().toUTCString() > new Date(item.auctionEndsAt).toUTCString()) return Promise.reject("time already ellapsed");
 
         if (userId == item.currentBid.bidderId) return ("You already have higher bid");
 
         if (bidAmount <= item.currentBid.price && bidAmount <= item.basePrice) return Promise.reject("your bid is less then current bid")
 
         // perform bid
-        let newbid = { currentBid: { price: 100, bidderId: userId } };
+        let newbid = { currentBid: { price: bidAmount, bidderId: userId } };
         const result = await update(itemId, newbid, true)
         return result;
 
@@ -62,14 +89,15 @@ export const performBid = async (itemId, bidAmount, userId) => {
 
 export const toogleAutobid = async (itemId, userId, status) => {
     // get bot
-    const bot = await getBotByUserId(userId)
+    console.log(itemId, userId, status);
+    let bot = await getBotByUserId(userId)
     if (!bot) return Promise.reject("Cant find bot for this user")
 
+    // return Promise.reject("Cant find bot for this user")
     let { _id: botId, ItemIdsForAutoBid: itemKeys } = bot;
     // changings
     const index = itemKeys.indexOf(itemId);
     if (status === "DEACT") {
-        console.log(itemKeys);
         if (index === -1) return bot;
         itemKeys.splice(index, 1)
     }
@@ -78,7 +106,7 @@ export const toogleAutobid = async (itemId, userId, status) => {
         itemKeys.push(itemId)
     }
     // update bot
-    const result = await updateBot(botId, { ItemIdsForAutoBid: [...itemKeys] })
+    const result = await updateBot(botId, { ...bot, ItemIdsForAutoBid: [...itemKeys] })
     return result;
 }
 
@@ -91,6 +119,33 @@ export const getAutoBotByUserId = async (id) => {
     return result;
 }
 export const updateAutoBot = async (userId, bot) => {
-    const result = await updateBot(userId, bot)
+    const result = await updateBotByUserId(userId, bot)
     return result;
+}
+export const getAutoAlert = async (userId) => {
+
+    const bot = await getBotByUserId(userId)
+    let amount = 0;
+
+    for (const i in ItemIdsForAutoBid) {
+
+        const itemId = ItemIdsForAutoBid[i];
+
+        const item = await getItemById(itemId);
+
+        if (newBidPrice + amount > bot.maxBalance) {
+            return true
+        }
+
+    }
+
+    // bot?.ItemIdsForAutoBid.map(async (itemId) => {
+    //     const item = await getById(itemId);
+    //     amount += item.currentBid.price
+    // })
+
+
+    const percent = (amount / bot.maxBalance) * 100;
+    if (bot.notifyAt <= percent) return true
+    return false
 }

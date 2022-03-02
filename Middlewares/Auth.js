@@ -1,19 +1,34 @@
+import { Admins, Regulars } from '../config/user_credentials'
 
-const Auth = (req, res, next) => {
+export const Auth = (req, res, next) => {
 
-    const { userName, role } = req.body;
-    if (!role || !userName) return res.status(401).send("invalid credentials")
+    const id = req.headers['auth-id'];
+    const role = req.headers['auth-role'];
+
+    if (!id || !role) return res.status(401).send("Invalid credentials");
+
     switch (role) {
-
-        case "admin":
-            if (admins.find(x => x.userName === userName)) return res.send("admin found")
-            return res.send("invalid credentials")
-
-        case "user":
-            if (users.find(x => x.userName === userName)) return res.send("user found")
-            return res.send("invalid credentials")
+        case 'admin':
+            let adm = Admins.find(x => x.id === id);
+            if (adm != undefined) {
+                req.userId = id;
+                req.userRole = role;
+                req.userName = adm.userName;
+                return next()
+            }
+            return res.status(401).send("Invalid credentials")
+            break
+        case 'regular':
+            let reg = Regulars.find(x => x.id === id)
+            if (reg != undefined) {
+                req.userId = id;
+                req.userRole = role;
+                req.userName = reg.userName;
+                return next()
+            }
+            return res.status(401).send("Invalid credentials")
 
         default:
-            return res.send("invalid credentials")
+            return res.status(401).send("Invalid credentials")
     }
 }

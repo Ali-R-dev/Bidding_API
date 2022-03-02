@@ -1,6 +1,6 @@
 {
   "Server": {
-    "port": 3000
+    "port": 3001
   },
   "Database": {
     "uri": "mongodb://localhost:27017/Bidding_Db?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false"

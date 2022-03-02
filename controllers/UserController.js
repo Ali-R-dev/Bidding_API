@@ -1,10 +1,10 @@
-import { fetchItemsList, getItemById, performBid, toogleAutobid, getAllAutoBots, getAutoBotByUserId, updateAutoBot } from '../services/commonServices'
+import { fetchItemsList, getItemById, performBid, toogleAutobid, getAllAutoBots, getAutoBotByUserId, updateAutoBot, getAutoAlert } from '../services/commonServices'
 
 
 
 
 export const get = (req, res) => {
-    fetchItemsList().then(
+    fetchItemsList(req.userId, req.userRole, req.query).then(
         onResolve => {
             return res.status(200).json(onResolve)
         },
@@ -21,31 +21,35 @@ export const getById = (req, res) => {
             return res.status(200).json(resolve)
         },
         reject => {
-            return res.status(400).send("No record found")
+            return res.status(404).send("No record found")
         }
     )
 }
 export const newBid = async (req, res) => {
 
     const { id: itemId } = req.params
-    const { bidAmount, userId } = req.body
+    const { bidAmount } = req.body
 
-    performBid(itemId, bidAmount, userId).then(
+    performBid(itemId, bidAmount, req.userId).then(
+
         resolve => {
             console.log(resolve)
             return res.status(200).json(resolve)
         },
+
         reject => {
             console.log("rejected", reject)
             return res.status(400).send(reject)
         }
     )
 }
+
+
 
 // --- bot area ---//
+export const getExceedLimitAlert = async (req, res) => {
 
-export const getAllBots = async (req, res) => {
-    getAllAutoBots().then(
+    getAutoAlert().then(
         resolve => {
             console.log(resolve)
             return res.status(200).json(resolve)
@@ -56,11 +60,11 @@ export const getAllBots = async (req, res) => {
         }
     )
 }
+
 export const updateBot = async (req, res) => {
-    const { id: userId } = req.params;
+
     const { maxBalance, notifyAt } = req.body
-    console.log("controller");
-    updateAutoBot(userId, { maxBalance, notifyAt }).then(
+    updateAutoBot(req.userId, { maxBalance, notifyAt }).then(
         resolve => {
 
             return res.status(200).json(resolve)
@@ -72,34 +76,32 @@ export const updateBot = async (req, res) => {
 }
 
 export const getbotByUserId = async (req, res) => {
-    const { id } = req.params
-    getAutoBotByUserId(id).then(
+
+    getAutoBotByUserId(req.userId).then(
         resolve => {
-            console.log(resolve)
             return res.status(200).json(resolve)
         },
         reject => {
-            console.log("rejected", reject)
             return res.status(400).send(reject)
         }
     )
 }
 
-
 export const toogleAutoBidStatus = (req, res) => {
 
     const { id: itemId } = req.params
-    const { userId, status } = req.body
-    toogleAutobid(itemId, userId, status)
-        .then(
-            resolve => {
-                console.log(resolve)
-                return res.status(200).json(resolve)
-            },
-            reject => {
-                console.log("rejected", reject)
-                return res.status(400).send(reject)
-            }
-        )
+    const { setStatus } = req.body
+    console.log(setStatus);
+    toogleAutobid(itemId, req.userId, setStatus).then(
+
+        resolve => {
+            return res.status(200).json(resolve)
+        },
+
+        reject => {
+            console.log("rejected", reject)
+            return res.status(400).send(reject)
+        }
+    )
 
 }

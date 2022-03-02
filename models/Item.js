@@ -3,12 +3,16 @@ const { Schema } = mongoose;
 const ItemSchema = new Schema({
     name: {
         type: String,
+        trim: true,
         required: [true, 'Name is mandatory']
     },
-    description: String,
+    description: {
+        type: String,
+        trim: true
+    },
     auctionEndsAt: {
         type: Date,
-        required: [true, 'Authion expiry is mandatory']
+        required: [true, 'auction expiry is mandatory']
     },
     isInAuction: Boolean,
     basePrice: {
