@@ -8,6 +8,10 @@ const BidderBotSchema = new Schema({
     maxBalance: Number,
     notifyAt: Number,
     ItemIdsForAutoBid: Array,
-    notifications: []
+    notifications: [{
+        time: Date,
+        typeCode: Number,
+        message: String
+    }]
 });
 export default mongoose.model("BidderBot", BidderBotSchema);

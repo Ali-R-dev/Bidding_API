@@ -1,4 +1,6 @@
+
 import Item from '../models/Item'
+
 
 export const create = async (itemObj) => {
     console.log(itemObj);
@@ -7,8 +9,8 @@ export const create = async (itemObj) => {
     return result;
 
 }
-export const get = async (search) => {
 
+export const get = async (search) => {
     let filterQuery = {};
     if (search != undefined) {
         // filterQuery = { name: { $regex: search } }
@@ -19,14 +21,15 @@ export const get = async (search) => {
             ]
         }
     }
-
     const result = await Item.find(filterQuery).sort({ 'basePrice': 'asc', 'currentBid.price': 'asc' });
     return result;
 }
+
 export const getById = async (id) => {
     const result = await Item.findById(id)
     return result;
 }
+
 export const update = async (id, item, modify) => {
 
     try {

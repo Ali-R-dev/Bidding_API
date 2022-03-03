@@ -43,6 +43,7 @@ export const getItemById = async (id) => {
     const result = await getById(id);
     return result;
 }
+// ---item update---
 export const updateItem = async (id, itemObj) => {
 
     if (itemObj?.auctionEndsAt) {
@@ -56,19 +57,19 @@ export const deleteItem = async (id) => {
     return result;
 }
 
+// --- function to perform bid by user---
 export const performBid = async (itemId, bidAmount, userId) => {
     try {
         // get current item
         const item = await getById(itemId);
         console.log(itemId, bidAmount, userId);
+
         // perform checks
         if (!item) return Promise.reject("cant find item");
-        // --------
-        // console.log(new Date().toUTCString(), new Date(item.auctionEndsAt).toUTCString());
-        // -----
+
         if (new Date().toUTCString() > new Date(item.auctionEndsAt).toUTCString()) return Promise.reject("time already ellapsed");
 
-        if (userId == item.currentBid.bidderId) return ("You already have higher bid");
+        if (userId == item.currentBid.bidderId) return ({ msg: "You already have higher bid", status: false });
 
         if (bidAmount <= item.currentBid.price && bidAmount <= item.basePrice) return Promise.reject("your bid is less then current bid")
 
@@ -82,8 +83,6 @@ export const performBid = async (itemId, bidAmount, userId) => {
         return Promise.reject(message)
     }
 }
-
-
 
 //--------Bot Area--------
 
@@ -138,12 +137,6 @@ export const getAutoAlert = async (userId) => {
         }
 
     }
-
-    // bot?.ItemIdsForAutoBid.map(async (itemId) => {
-    //     const item = await getById(itemId);
-    //     amount += item.currentBid.price
-    // })
-
 
     const percent = (amount / bot.maxBalance) * 100;
     if (bot.notifyAt <= percent) return true

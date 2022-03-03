@@ -1,4 +1,4 @@
-import { getActiveBots } from '../DAL/biderBotDbOperations';
+import { getActiveBots, updateBotByUserId } from '../DAL/biderBotDbOperations';
 import { getById as getItemById } from '../DAL/itemDbOperations';
 import { performBid, toogleAutobid, updateAutoBot } from '../services/commonServices'
 
@@ -17,7 +17,6 @@ const ExecBidderBots = async () => {
 
         let itemIdsList = bot.ItemIdsForAutoBid;
 
-        // console.log(bot.userId, bot.ItemIdsForAutoBid);
         // check for max balance reached
 
         for (const j in itemIdsList) {
@@ -25,19 +24,24 @@ const ExecBidderBots = async () => {
             const item = await getItemById(itemId);
 
             let newBidPrice = Math.max(item.currentBid.price, item.basePrice) + 1;
-            console.log(newBidPrice);
             if (await calculateMaxAmount(bot, itemIdsList, itemId, newBidPrice)) {
+                await createNotificationArray(bot, `Autobidding stopped for " ${item.name} " due to lack of amount`, 1)
                 await toogleAutobid(itemId, bot.userId, "DEACT");
                 continue;
             }
 
             await performBid(itemId, newBidPrice, bot.userId).then(
 
-                (resol) => {
+                async (resol) => {
+
+                    if (resol?.status) {
+                        await createNotificationArray(bot, `Bid performed by autobidder on " ${item.name} " `, 0)
+                    }
                     console.log("Auto bid performed by ", bot.userId, resol)
                 }
                 ,
                 async (rej) => {
+                    await createNotificationArray(bot, `Autobidding stopped for " ${item.name} "`, 1)
                     console.log("cannot perform bid ", rej);
                     await toogleAutobid(itemId, bot.userId, "DEACT");
                 });
@@ -52,14 +56,25 @@ const ExecBidderBots = async () => {
 const calculateMaxAmount = async (bot, itemIdsList, currentItemId, newBidPrice) => {
 
     let amount = 0;
-    itemIdsList = itemIdsList.filter(i => i !== currentItemId)
+    let currentItemPrice = 0;
+    // itemIdsList = itemIdsList.filter(i => i !== currentItemId)
     for (const i in itemIdsList) {
+
         const itemId = itemIdsList[i];
+
         const item = await getItemById(itemId);
-        if (item.currentBid.bidderId === bot.userId)
+
+        if (item.currentBid.bidderId === bot.userId && item._id != currentItemId)
             amount += item.currentBid.price;
-        console.log("step ", amount);
+        else currentItemPrice = item.currentBid.price
     }
+
+    const percent = ((amount + currentItemPrice) / bot.maxBalance) * 100;
+    console.log(percent, amount, bot.notifyAt);
+    if (percent > bot.notifyAt) {
+        await createNotificationArray(bot, `Bot already used ${percent} % amount`, 2)
+    }
+
     if (newBidPrice + amount > bot.maxBalance) {
         return true
     }
@@ -67,8 +82,18 @@ const calculateMaxAmount = async (bot, itemIdsList, currentItemId, newBidPrice) 
 
 }
 
+const createNotificationArray = async (bot, message, code) => {
 
-
+    let notifyList = bot.notifications;
+    if (code == 2) notifyList = notifyList.filter(e => e.typeCode !== 2)
+    notifyList.unshift({
+        message: message,
+        typeCode: code,
+        time: new Date().toUTCString()
+    })
+    await updateBotByUserId(bot.userId, { notifications: notifyList })
+    return;
+}
 
 
 export const RunBidderBots = async () => {

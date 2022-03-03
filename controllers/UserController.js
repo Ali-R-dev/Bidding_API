@@ -63,8 +63,8 @@ export const getExceedLimitAlert = async (req, res) => {
 
 export const updateBot = async (req, res) => {
 
-    const { maxBalance, notifyAt } = req.body
-    updateAutoBot(req.userId, { maxBalance, notifyAt }).then(
+    // const { maxBalance, notifyAt } = req.body
+    updateAutoBot(req.userId, req.body).then(
         resolve => {
 
             return res.status(200).json(resolve)

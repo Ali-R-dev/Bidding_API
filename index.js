@@ -51,9 +51,9 @@ DbConnect(DbUri).then(
         httpServer.listen(PORT)
         console.log(`server running on port ${PORT}`)
 
-        //--start biider bots ---
+        //--start biider bots service---
         setTimeout(() => {
-            // RunBidderBots();
+            RunBidderBots();
         }, 2000);
     }
 )
