@@ -25,11 +25,10 @@ export const fetchItemsList = async (userId, userRole, query) => {
         current: 0,
     }
 
-    pageOptions.total = Math.ceil(result.length / 3);
+    pageOptions.total = Math.ceil(result.length / 10);
     pageOptions.current = isNaN(page) || parseInt(page) > pageOptions.total ? 0 : parseInt(page);
-    console.log(pageOptions);
 
-    result = result.splice(pageOptions.current * 3, 3);
+    result = result.splice(pageOptions.current * 10, 10);
     return [result, pageOptions];
 }
 
