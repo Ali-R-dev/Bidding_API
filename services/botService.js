@@ -34,7 +34,7 @@ const ExecBidderBots = async () => {
 
                 async (resol) => {
 
-                    if (resol?.status) {
+                    if (resol?.status == true) {
                         await createNotificationArray(bot, `Bid performed by autobidder on " ${item.name} " `, 0)
                     }
                     console.log("Auto bid performed by ", bot.userId, resol)

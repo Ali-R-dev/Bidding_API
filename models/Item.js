@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 const ItemSchema = new Schema({
+
     name: {
         type: String,
         trim: true,
