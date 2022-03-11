@@ -4,7 +4,7 @@ import { fetchItemsList, getItemById, performBid, toogleAutobid, getAllAutoBots,
 
 
 export const get = (req, res) => {
-    fetchItemsList(req.userId, req.userRole, req.query).then(
+    fetchItemsList(req.user, req.query).then(
         onResolve => {
             return res.status(200).json(onResolve)
         },
@@ -15,7 +15,7 @@ export const get = (req, res) => {
 }
 export const getById = (req, res) => {
     const { id } = req.params;
-    getItemById(id).then(
+    getItemById(req.user, id).then(
         resolve => {
 
             return res.status(200).json(resolve)
@@ -25,6 +25,13 @@ export const getById = (req, res) => {
         }
     )
 }
+
+
+
+
+
+
+
 export const newBid = async (req, res) => {
 
     const { id: itemId } = req.params

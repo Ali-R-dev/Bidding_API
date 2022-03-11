@@ -11,13 +11,15 @@ const BidSchema = new Schema({
         required: [true, 'createdAt is mandatory']
     },
     userId: {
-        type: String,
-        required: [true, 'user Id is mandatory']
+        type: Schema.Types.ObjectId,
+        required: [true, 'user Id is mandatory'],
+        ref: 'User'
     },
     itemId: {
-        type: String,
-        required: [true, 'item Id is mandatory']
-    }
+        type: Schema.Types.ObjectId,
+        required: [true, 'Item Id is mandatory'],
+        ref: 'Item'
+    },
 
 });
 export default mongoose.model("Bid", BidSchema);

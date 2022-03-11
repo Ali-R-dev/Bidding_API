@@ -3,7 +3,6 @@ import Item from '../models/Item'
 
 
 export const create = async (itemObj) => {
-    console.log(itemObj);
     var newItem = new Item({ ...itemObj })
     const result = await newItem.save();
     return result;
@@ -13,7 +12,7 @@ export const create = async (itemObj) => {
 export const get = async (search) => {
     let filterQuery = {};
     if (search != undefined) {
-        // filterQuery = { name: { $regex: search } }
+
         filterQuery = {
             $or: [
                 { name: { $regex: search } },
@@ -21,7 +20,9 @@ export const get = async (search) => {
             ]
         }
     }
-    const result = await Item.find(filterQuery).sort({ 'basePrice': 'asc', 'currentBid.price': 'asc' });
+
+    const result = await Item.find(filterQuery);
+    // .sort({ 'basePrice': 'asc', 'currentBid.price': 'asc' })
     return result;
 }
 

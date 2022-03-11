@@ -1,5 +1,6 @@
 
 import { getBotById, getBotByUserId, getBots, updateBot, updateBotByUserId } from '../DAL/biderBotDbOperations';
+
 import {
     create,
     get,
@@ -8,73 +9,152 @@ import {
     del
 } from '../DAL/itemDbOperations'
 
+import { createBid, getBidById } from '../DAL/bidDbOperations'
 
-export const fetchItemsList = async (userId, userRole, query) => {
-    const { page, search } = query
-    let result = [];
-    console.log(query);
-    if (userRole === 'admin') {
-        result = await (await get(search)).filter(item => item.adminId == userId);
+
+export const fetchItemsList = async (user, query) => {
+
+    try {
+
+        const { page, search } = query
+        let result = [];
+        // --- filtration ---
+        if (user.role === 'ADM') {
+            result = await (await get(search)).filter(item => user._id.equals(item.adminId));
+        }
+        else {
+            result = await get(search);
+        }
+
+        const pageOptions = {
+            total: 0,
+            current: 0,
+        }
+        // ---for paginaton---
+        pageOptions.total = Math.ceil(result.length / 10);
+        pageOptions.current = isNaN(page) || parseInt(page) > pageOptions.total ? 0 : parseInt(page);
+
+        result = result.splice(pageOptions.current * 10, 10);
+        return [result, pageOptions];
+
+    } catch (error) {
+        const { message } = error
+        return Promise.reject({ msg: message })
     }
-    else {
-        result = await get(search);
-    }
-
-    const pageOptions = {
-        total: 0,
-        current: 0,
-    }
-
-    pageOptions.total = Math.ceil(result.length / 10);
-    pageOptions.current = isNaN(page) || parseInt(page) > pageOptions.total ? 0 : parseInt(page);
-
-    result = result.splice(pageOptions.current * 10, 10);
-    return [result, pageOptions];
 }
 
-export const createItem = async (itemObj) => {
-    const result = await create({ ...itemObj, auctionEndsAt: new Date(itemObj.auctionEndsAt).toUTCString() });
-    return result;
+
+export const createItem = async (itemObj, user) => {
+    try {
+        // ---validation---
+        if (user.role !== 'ADM') return Promise.reject({ msg: "Unauthorized to create new item" })
+        const result = await create({ ...itemObj, auctionEndsAt: new Date(itemObj.auctionEndsAt).toUTCString(), adminId: user._id });
+        return result;
+
+    } catch (error) {
+        const { message } = error
+        return Promise.reject({ msg: message })
+    }
+
 }
 
-export const getItemById = async (id) => {
+
+export const getItemById = async (id, user) => {
 
     const result = await getById(id);
-    return result;
-}
-// ---item update---
-export const updateItem = async (id, itemObj) => {
-
-    if (itemObj?.auctionEndsAt) {
-        itemObj.auctionEndsAt = new Date(itemObj.auctionEndsAt).toUTCString()
+    // ---validation---
+    if (result && user.role === 'ADM' && !user._id.equals(result.adminId)) {
+        return Promise.reject({ msg: "Unauthorized to access" })
     }
-    const result = await update(id, itemObj);
-    return result;
-}
-export const deleteItem = async (id) => {
-    const result = await del(id);
     return result;
 }
 
-// --- function to perform bid by user---
-export const performBid = async (itemId, bidAmount, userId) => {
+
+export const updateItem = async (id, itemObj, user) => {
+
     try {
+
+        const item = await getById(id);
+
+        // ---validation before update---
+
+        if (!item) return Promise.reject({ msg: "No record found for update" })
+
+        if (user.role !== 'ADM' || !user._id.equals(item.adminId)) return Promise.reject({ msg: "unauthorized to update" })
+
+        if (item.isSoled == true) return Promise.reject({ msg: "cant update , Item Already sold" })
+
+        if (itemObj?.auctionEndsAt) {
+            itemObj.auctionEndsAt = new Date(itemObj.auctionEndsAt).toUTCString()
+        }
+
+        const result = await update(id, itemObj);
+        return result;
+
+    } catch (error) {
+        const { message } = error
+        return Promise.reject({ msg: message })
+    }
+}
+
+
+export const deleteItem = async (id, user) => {
+    try {
+
+        const item = await getById(id);
+
+        // ---validation before delete---
+        if (!item) return Promise.reject({ msg: "No item found" })
+
+        if (!user._id.equals(item.adminId)) return Promise.reject({ msg: "Unauthorized to delete" })
+
+        if (item.isSoled) return Promise.reject({ msg: "canot delete , item already sold" })
+
+        // ---del
+        const result = await del(id);
+        return result;
+
+    } catch (error) {
+        const { message } = error
+        return Promise.reject({ msg: message })
+    }
+
+}
+// ---------------------------------
+
+
+
+
+export const performBid = async (itemId, bidAmount, user) => {
+
+    try {
+
+        if (user.role !== "REG") return Promise.reject("Unauthorized to bid");
+
         // get current item
         const item = await getById(itemId);
-        console.log(itemId, bidAmount, userId);
+
+        console.log(itemId, bidAmount, user.userId);
 
         // perform checks
-        if (!item) return Promise.reject("cant find item");
+        if (!item) return Promise.reject({ msg: "cant find item" });
 
-        if (new Date().toUTCString() > new Date(item.auctionEndsAt).toUTCString()) return Promise.reject("time already ellapsed");
+        console.log(new Date().getTime(), new Date(item.auctionEndsAt).getTime());
 
-        if (userId == item.currentBid.bidderId) return ({ msg: "You already have higher bid", status: false });
+        if (new Date().toUTCString() >= new Date(item.auctionEndsAt).toUTCString()) return Promise.reject({ msg: "time already ellapsed" });
 
-        if (bidAmount <= item.currentBid.price && bidAmount <= item.basePrice) return Promise.reject("your bid is less then current bid")
+        if (user._id.equals(item.currentBid)) return ({ msg: "You already have higher bid", status: true });
+
+        let currentBidObj = item?.currentBid ? await getBidById(item.currentBid) : { bidPrice: 0 };
+
+        if (bidAmount <= Math.max(item.basePrice, currentBidObj.bidPrice)) return Promise.reject("your bid is less then current bid")
 
         // perform bid
-        let newbid = { currentBid: { price: bidAmount, bidderId: userId } };
-        const result = await update(itemId, newbid, true)
+        let newbid = await createBid(item._id, user._id, bidAmount)
+        const result = await update(itemId, {
+            currentBid: newbid
+                ._id
+        }, true)
         return result;
 
     } catch (error) {

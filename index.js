@@ -2,6 +2,7 @@ import morgan from 'morgan'
 import loginRoute from './routes/loginRoute'
 import userRoutes from './routes/userRoutes'
 import adminRoutes from './routes/adminRoutes'
+import itemRoutes from './routes/itemRoutes'
 import Cors from 'cors'
 import DbConnect from './db/DbConnect'
 import config from 'config'
@@ -24,10 +25,13 @@ app.use(Auth)
 
 // --- Routing ---
 app.use("/api/login", loginRoute);
-app.use("/api/user", userRoutes);
-app.use("/api/adm", adminRoutes);
+app.use("/api/items", itemRoutes);
+// app.use("/api/user", userRoutes);
+// app.use("/api/adm", adminRoutes);
 app.use("*", (req, res) => res.status(404).send("route not found"));
-// ------
+// ---------------
+
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
@@ -53,7 +57,7 @@ DbConnect(DbUri).then(
 
         //--start biider bots service---
         setTimeout(() => {
-            RunBidderBots();
+            //RunBidderBots();
         }, 2000);
     }
 )

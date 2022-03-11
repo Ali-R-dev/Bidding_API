@@ -15,18 +15,22 @@ const ItemSchema = new Schema({
         type: Date,
         required: [true, 'auction expiry is mandatory']
     },
-    isInAuction: Boolean,
+    isSoled: {
+        type: Boolean,
+        default: false
+    },
     basePrice: {
         type: Number,
         required: [true, 'Base price is mandatory']
     },
     adminId: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: 'User',
         required: [true, 'AdminId is mandatory']
     },
     currentBid: {
-        price: Number,
-        bidderId: String,
+        type: Schema.Types.ObjectId,
+        ref: 'Bid'
     }
 });
 export default mongoose.model("Item", ItemSchema);
