@@ -9,7 +9,9 @@ import {
     del
 } from '../DAL/itemDbOperations'
 
-import { createBid, getBidById } from '../DAL/bidDbOperations'
+import { getUserById } from './userService';
+
+import { createBid, getBidById, getBidsForItem } from '../DAL/bidDbOperations'
 
 
 export const fetchItemsList = async (user, query) => {
@@ -84,6 +86,8 @@ export const updateItem = async (id, itemObj, user) => {
 
         if (item.isSoled == true) return Promise.reject({ msg: "cant update , Item Already sold" })
 
+        console.log(itemObj);
+
         if (itemObj?.auctionEndsAt) {
             itemObj.auctionEndsAt = new Date(itemObj.auctionEndsAt).toUTCString()
         }
@@ -120,9 +124,7 @@ export const deleteItem = async (id, user) => {
     }
 
 }
-// ---------------------------------
-
-
+// ============= Bid Area =============
 
 
 export const performBid = async (itemId, bidAmount, user) => {
@@ -139,28 +141,56 @@ export const performBid = async (itemId, bidAmount, user) => {
         // perform checks
         if (!item) return Promise.reject({ msg: "cant find item" });
 
-        console.log(new Date().getTime(), new Date(item.auctionEndsAt).getTime());
+        if (new Date().getTime() >= new Date(item.auctionEndsAt).getTime()) return Promise.reject({ msg: "time already ellapsed" });
 
-        if (new Date().toUTCString() >= new Date(item.auctionEndsAt).toUTCString()) return Promise.reject({ msg: "time already ellapsed" });
+        // if (new Date().toUTCString() >= new Date(item.auctionEndsAt).toUTCString()) return Promise.reject({ msg: "time already ellapsed" });
 
-        if (user._id.equals(item.currentBid)) return ({ msg: "You already have higher bid", status: true });
+        let currentBidObj = { bidPrice: 0.0 };
+        if (item?.currentBid) {
+            const res = await getBidById(item.currentBid)
+            if (res) currentBidObj = res
+        }
 
-        let currentBidObj = item?.currentBid ? await getBidById(item.currentBid) : { bidPrice: 0 };
+        if (user._id.equals(currentBidObj?.userId)) return ({ msg: "You already have higher bid", status: true });
 
-        if (bidAmount <= Math.max(item.basePrice, currentBidObj.bidPrice)) return Promise.reject("your bid is less then current bid")
+        if (bidAmount <= Math.max(parseInt(item.basePrice), currentBidObj.bidPrice)) return Promise.reject("your bid is less then current bid")
 
         // perform bid
         let newbid = await createBid(item._id, user._id, bidAmount)
-        const result = await update(itemId, {
-            currentBid: newbid
-                ._id
-        }, true)
+        const result = await update(itemId, { currentBid: newbid._id }, true)
         return result;
 
     } catch (error) {
         const { message } = error;
         return Promise.reject(message)
     }
+}
+
+export const getBidsByItemId = async (itemId) => {
+
+    try {
+        const bids = await getBidsForItem(itemId);
+        let result = [];
+        if (bids.length) {
+            for (let b in bids) {
+                const bid = bids[b]
+                const user = await getUserById(bid.userId)
+                result.push({
+                    _id: bid._id,
+                    bidPrice: bid.bidPrice,
+                    createdAt: bid.createdAt,
+                    userId: user.userId,
+                    userName: user.userName
+                })
+            }
+        }
+        return result;
+
+    } catch (error) {
+        const { message } = error;
+        return Promise.reject(message)
+    }
+
 }
 
 //--------Bot Area--------

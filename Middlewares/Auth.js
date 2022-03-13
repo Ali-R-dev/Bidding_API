@@ -1,6 +1,5 @@
-import { Admins, Regulars } from '../config/user_credentials'
+
 import { getUserByCred } from '../services/userService'
-import User from '../models/user'
 
 export const Auth = async (req, res, next) => {
 
@@ -11,10 +10,10 @@ export const Auth = async (req, res, next) => {
 
     const user = await getUserByCred({ userId: id, role: role });
 
-    if (!user.length) {
+    if (!user) {
         return res.status(401).send("Invalid credentials");
     }
-    req.user = user[0]
+    req.user = user
 
     return next();
 }

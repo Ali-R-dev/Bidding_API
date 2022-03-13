@@ -2,7 +2,7 @@ import User from '../models/user'
 
 export const getUser = async (filter) => {
 
-    const res = await User.find(filter)
+    const res = await User.findOne(filter)
     return res;
 
 }

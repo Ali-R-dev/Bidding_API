@@ -10,11 +10,11 @@ export const getBidsForItem = async (itemId) => {
 
 export const getBidById = async (bidId) => {
 
-    const res = await Bid.find({ _id: bidId })
+    const res = await Bid.findOne({ _id: bidId })
     return res;
 }
 
-export const getBidsByUser = async (userId) => {
+export const getBidsByUserId = async (userId) => {
 
     const res = await Bid.find({ userId: userId })
     return res;

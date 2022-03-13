@@ -20,7 +20,16 @@ export const getUserByCred = async (userObj) => {
 }
 
 
-export const getUserById = async () => {
+export const getUserById = async (id) => {
+    try {
+
+        const res = await getUser({ _id: id });
+        return res;
+
+    } catch (error) {
+        const { message } = error
+        return Promise.reject({ msg: message })
+    }
 
 }
 

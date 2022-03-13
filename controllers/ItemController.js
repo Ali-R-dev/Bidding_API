@@ -6,7 +6,8 @@ import {
     updateItem,
     deleteItem,
     getItemById,
-    performBid
+    performBid,
+    getBidsByItemId
 } from '../services/commonServices'
 
 // ---create an item---
@@ -33,7 +34,6 @@ export const get = (req, res) => {
         }
     )
 }
-
 // --get item by id---
 export const getById = (req, res) => {
 
@@ -49,12 +49,10 @@ export const getById = (req, res) => {
     )
 
 }
-
 // ---update---
 export const update = (req, res) => {
 
     const { id } = req.params;
-
     updateItem(id, req.body, req.user).then(
         resolve => {
             console.log(resolve);
@@ -66,7 +64,6 @@ export const update = (req, res) => {
         }
     )
 }
-
 // ---Delete an item----
 export const del = (req, res) => {
     const { id } = req.params;
@@ -92,7 +89,27 @@ export const newBid = async (req, res) => {
     performBid(itemId, bidAmount, req.user).then(
 
         resolve => {
-            console.log(resolve)
+            console.log("resolve", resolve)
+
+            return res.status(200).json(resolve)
+        },
+
+        reject => {
+            console.log("rejected", reject)
+            return res.status(400).send(reject)
+        }
+    )
+}
+
+export const getBids = async (req, res) => {
+
+    const { id: itemId } = req.params
+
+    getBidsByItemId(itemId).then(
+
+        resolve => {
+            console.log("resolve", resolve)
+
             return res.status(200).json(resolve)
         },
 
