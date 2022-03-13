@@ -17,26 +17,22 @@ const router = express.Router();
 // router.route("/items/:id")
 //     .get(getById);
 
-// router.route("/items")
-//     .get(get);
-
-
 
 
 // ---testing area---
-import { createUser, getAllUsers, getUserByCred } from '../services/userService'
+// import { createUser, getAllUsers, getUserByCred } from '../services/userService'
 
-const testGet = async (req, res) => {
-    await getAllUsers().then(
-        ful => res.send(ful),
-        rej => res.send(rej)
-    )
-}
-const testpost = async (req, res) => {
-    await createUser(req.body).then(
-        ful => res.send(ful),
-        rej => res.send(rej)
-    )
-}
-router.route('/user').get(testGet).post(testpost)
+// const testGet = async (req, res) => {
+//     await getAllUsers().then(
+//         ful => res.send(ful),
+//         rej => res.send(rej)
+//     )
+// }
+// const testpost = async (req, res) => {
+//     await createUser(req.body).then(
+//         ful => res.send(ful),
+//         rej => res.send(rej)
+//     )
+// }
+// router.route('/user').get(testGet).post(testpost)
 export default router;

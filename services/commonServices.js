@@ -11,7 +11,7 @@ import {
 
 import { getUserById } from './userService';
 
-import { createBid, getBidById, getBidsForItem } from '../DAL/bidDbOperations'
+import { createBid, getBidById, getBidsForItem, getBidsByUserId } from '../DAL/bidDbOperations'
 
 
 export const fetchItemsList = async (user, query) => {
@@ -101,7 +101,6 @@ export const updateItem = async (id, itemObj, user) => {
     }
 }
 
-
 export const deleteItem = async (id, user) => {
     try {
 
@@ -122,8 +121,29 @@ export const deleteItem = async (id, user) => {
         const { message } = error
         return Promise.reject({ msg: message })
     }
+}
+// --- items list based on user bidding history ---
+export const itemsByUserBids = async (user) => {
+
+    try {
+        // [...new Set(data.map(item => item.Group))]
+        const bids = await getBidsByUserId(user._id)
+        console.log(bids);
+        let items = []
+        for (let b in bids) {
+            const bid = bids[b]
+            const item = await getItemById(bid.itemId, user)
+            items.push(item)
+        }
+        return items;
+    } catch (error) {
+        const { message } = error
+        return Promise.reject({ msg: message })
+    }
 
 }
+
+
 // ============= Bid Area =============
 
 
@@ -190,7 +210,6 @@ export const getBidsByItemId = async (itemId) => {
         const { message } = error;
         return Promise.reject(message)
     }
-
 }
 
 //--------Bot Area--------

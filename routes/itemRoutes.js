@@ -1,7 +1,7 @@
 import express from 'express'
 // import {getById, newBid, toogleAutoBidStatus, updateBot, getbotByUserId } from '../controllers/UserController'
 
-import { create, get, getById, update, del, newBid, getBids } from '../controllers/ItemController'
+import { create, get, getById, update, del, newBid, getBids, getItemsByUserbids } from '../controllers/ItemController'
 
 const router = express.Router();
 
@@ -28,6 +28,9 @@ router.route("/bids/:id")
     .get(getBids)
 
 // --- Item Routes ---
+
+router.route("/userhistory").get(getItemsByUserbids);
+
 router.route("/:id")
     .get(getById).put(update).delete(del);
 

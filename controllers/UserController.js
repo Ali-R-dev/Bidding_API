@@ -26,12 +26,6 @@ export const getById = (req, res) => {
     )
 }
 
-
-
-
-
-
-
 export const newBid = async (req, res) => {
 
     const { id: itemId } = req.params
@@ -112,3 +106,6 @@ export const toogleAutoBidStatus = (req, res) => {
     )
 
 }
+
+// ===================== NEW ===========================
+

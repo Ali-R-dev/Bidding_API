@@ -7,7 +7,8 @@ import {
     deleteItem,
     getItemById,
     performBid,
-    getBidsByItemId
+    getBidsByItemId,
+    itemsByUserBids
 } from '../services/commonServices'
 
 // ---create an item---
@@ -77,6 +78,26 @@ export const del = (req, res) => {
         }
     )
 }
+// --- get All items whome regular user bid ---
+export const getItemsByUserbids = async (req, res) => {
+
+    itemsByUserBids(req.user).then(
+
+        resolve => {
+            console.log("resolve", resolve)
+
+            return res.status(200).json(resolve)
+        },
+
+        reject => {
+            console.log("rejected", reject)
+            return res.status(400).send(reject)
+        }
+    )
+}
+
+
+
 
 // ======== Bidding Area ========
 
