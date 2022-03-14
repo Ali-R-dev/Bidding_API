@@ -17,7 +17,6 @@ import { createBid, getBidById, getBidsForItem, getBidsByUserId } from '../DAL/b
 export const fetchItemsList = async (user, query) => {
 
     try {
-
         const { page, search } = query
         let result = [];
         // --- filtration ---
@@ -50,6 +49,9 @@ export const createItem = async (itemObj, user) => {
     try {
         // ---validation---
         if (user.role !== 'ADM') return Promise.reject({ msg: "Unauthorized to create new item" })
+
+        if (itemObj.currentBid == '') delete itemObj.currentBid;
+
         const result = await create({ ...itemObj, auctionEndsAt: new Date(itemObj.auctionEndsAt).toUTCString(), adminId: user._id });
         return result;
 
@@ -91,6 +93,8 @@ export const updateItem = async (id, itemObj, user) => {
         if (itemObj?.auctionEndsAt) {
             itemObj.auctionEndsAt = new Date(itemObj.auctionEndsAt).toUTCString()
         }
+
+        if (itemObj.currentBid == '') delete itemObj.currentBid;
 
         const result = await update(id, itemObj);
         return result;

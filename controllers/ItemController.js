@@ -26,6 +26,7 @@ export const create = (req, res) => {
 }
 // ---get an item---
 export const get = (req, res) => {
+
     fetchItemsList(req.user, req.query).then(
         onResolve => {
             return res.status(200).json(onResolve)
