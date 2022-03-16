@@ -208,6 +208,9 @@ export const getBidsByItemId = async (itemId) => {
                 })
             }
         }
+        result.sort((a, b) => {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        })
         return result;
 
     } catch (error) {

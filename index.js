@@ -23,6 +23,22 @@ app.use(express.urlencoded({ extended: false }))
 app.use(Cors());
 app.use(Auth)
 
+// ---server---
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: "*"
+    }
+});
+
+// in future---for live update
+io.on("connection", socket => {
+    io.on("init_update", data => {
+        console.log(socdataket)
+    });
+});
+// -------
+
 // --- Routing ---
 app.use("/api/login", loginRoute);
 app.use("/api/items", itemRoutes);
@@ -31,20 +47,6 @@ app.use("/api/items", itemRoutes);
 app.use("*", (req, res) => res.status(404).send("route not found"));
 // ---------------
 
-
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*"
-    }
-});
-
-// ---socket conn---
-// in future---for live update
-io.on("connection", socket => {
-    io.emit('message', ({ message: "hello" }))
-});
-// -------
 
 const PORT = config.get('Server.port');
 const DbUri = config.get('Database.uri');
