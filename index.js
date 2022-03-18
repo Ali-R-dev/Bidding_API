@@ -17,7 +17,7 @@ import { Server } from "socket.io";
 
 const app = express();
 // ---Middlewares---
-app.use(morgan('tiny'));
+//app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 app.use(Cors());
@@ -27,16 +27,27 @@ app.use(Auth)
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: "*"
+        origin: "*",
+        methods: ['GET', 'POST']
     }
 });
 
 // in future---for live update
-io.on("connection", socket => {
-    io.on("init_update", data => {
-        console.log(socdataket)
+io.on("connection", (socket) => {
+    console.log("New user connected...", socket.id)
+
+    socket.on("itemPage", (id) => {
+
+        console.log("item page open...");
     });
+
+
+    socket.on('disconnect', () => {
+        console.log('Disconnected....');
+    });
+
 });
+
 // -------
 
 // --- Routing ---

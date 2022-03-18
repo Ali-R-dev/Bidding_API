@@ -130,13 +130,10 @@ export const getBids = async (req, res) => {
     getBidsByItemId(itemId).then(
 
         resolve => {
-            console.log("resolve", resolve)
-
             return res.status(200).json(resolve)
         },
 
         reject => {
-            console.log("rejected", reject)
             return res.status(400).send(reject)
         }
     )
