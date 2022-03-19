@@ -8,12 +8,12 @@ import DbConnect from './db/DbConnect'
 import config from 'config'
 import { Auth } from './Middlewares/Auth'
 import { RunBidderBots } from './services/botService'
-
+import { InitSocket } from './services/MySocketIo'
 
 // ---server instance cretion---
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
+
 
 const app = express();
 // ---Middlewares---
@@ -25,29 +25,34 @@ app.use(Auth)
 
 // ---server---
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*",
-        methods: ['GET', 'POST']
-    }
-});
-
-// in future---for live update
-io.on("connection", (socket) => {
-    console.log("New user connected...", socket.id)
-
-    socket.on("itemPage", (id) => {
-
-        console.log("item page open...");
-    });
+InitSocket(httpServer)
+// const io = new Server(httpServer, {
+//     cors: {
+//         origin: "*",
+//         methods: ['GET', 'POST']
+//     }
+// });
 
 
-    socket.on('disconnect', () => {
-        console.log('Disconnected....');
-    });
-
-});
-
+// io.on("connection", (socket) => {
+//     io.emit("message", { message: "hello" });
+//     socket.on("startLiveUpdates", (id) => {
+//         socket.join(id);
+//         console.log("room joined: ", id);
+//     });
+//     socket.on("StopLiveUpdates", (id) => {
+//         socket.leave(id);
+//         console.log("room leaved : ", id);
+//     });
+// });
+// setInterval(() => {
+//     let rooms = Array.from(io.sockets.adapter.rooms);
+//     const filtered = rooms.filter((room) => !room[1].has(room[0]));
+//     const res = filtered.map((i) => i[0]);
+//     console.log("no of rooms :", res);
+//     // const n = res.find((r) => r === "123");
+//     // if (n) io.to("123").emit("updatedData");
+// }, 2000);
 // -------
 
 // --- Routing ---

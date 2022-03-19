@@ -2,6 +2,7 @@ import { getActiveBots, updateBotByUserId } from '../DAL/biderBotDbOperations';
 import { getById as getItemById } from '../DAL/itemDbOperations';
 import { performBid, toogleAutobid, updateAutoBot } from '../services/commonServices'
 
+import { getBidById } from '../DAL/bidDbOperations'
 const ExecBidderBots = async () => {
 
     // get active bots
@@ -23,6 +24,8 @@ const ExecBidderBots = async () => {
             let itemId = itemIdsList[j]
             const item = await getItemById(itemId);
 
+            const currentBid = await getBidById(item.currentBid);
+            // ------------------------------------------
             let newBidPrice = Math.max(item.currentBid.price, item.basePrice) + 1;
             if (await calculateMaxAmount(bot, itemIdsList, itemId, newBidPrice)) {
                 await createNotificationArray(bot, `Autobidding stopped for " ${item.name} " due to lack of amount`, 1)

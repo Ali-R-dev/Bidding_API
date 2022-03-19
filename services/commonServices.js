@@ -12,7 +12,7 @@ import {
 import { getUserById } from './userService';
 
 import { createBid, getBidById, getBidsForItem, getBidsByUserId } from '../DAL/bidDbOperations'
-
+import { getIo } from './MySocketIo'
 
 export const fetchItemsList = async (user, query) => {
 
@@ -101,6 +101,7 @@ export const updateItem = async (id, itemObj, user) => {
 
     } catch (error) {
         const { message } = error
+        console.log(error);
         return Promise.reject({ msg: message })
     }
 }
@@ -132,16 +133,24 @@ export const itemsByUserBids = async (user) => {
     try {
         // [...new Set(data.map(item => item.Group))]
         const bids = await getBidsByUserId(user._id)
-        console.log(bids);
         let items = []
         for (let b in bids) {
             const bid = bids[b]
             const item = await getItemById(bid.itemId, user)
-            items.push(item)
+
+            const n = items.find(itm => itm._id.equals(item._id))
+            if (!n) {
+                const currentBid = await getBidById(item._id)
+                const res = {
+                    _id: item._id, name: item.name, isSoled: item.isSoled, currentBid: currentBid
+                }
+                items.push(res)
+            }
         }
         return items;
     } catch (error) {
         const { message } = error
+        console.log(error);
         return Promise.reject({ msg: message })
     }
 
@@ -182,6 +191,7 @@ export const performBid = async (itemId, bidAmount, user) => {
         // perform bid
         let newbid = await createBid(item._id, user._id, bidAmount)
         const result = await update(itemId, { currentBid: newbid._id }, true)
+        getIo().to(itemId).emit("updatedData")
         return result;
 
     } catch (error) {

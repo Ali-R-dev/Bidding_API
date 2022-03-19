@@ -81,17 +81,16 @@ export const del = (req, res) => {
 }
 // --- get All items whome regular user bid ---
 export const getItemsByUserbids = async (req, res) => {
-
+    console.log("REACHED");
     itemsByUserBids(req.user).then(
 
         resolve => {
-            console.log("resolve", resolve)
-
+            console.log(resolve);
             return res.status(200).json(resolve)
         },
 
         reject => {
-            console.log("rejected", reject)
+            console.log(reject);
             return res.status(400).send(reject)
         }
     )
@@ -111,7 +110,7 @@ export const newBid = async (req, res) => {
     performBid(itemId, bidAmount, req.user).then(
 
         resolve => {
-            console.log("resolve", resolve)
+            if (resolve.status) return res.status(400).send(resolve)
 
             return res.status(200).json(resolve)
         },
