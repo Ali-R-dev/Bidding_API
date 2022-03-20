@@ -65,12 +65,32 @@ export const createItem = async (itemObj, user) => {
 
 export const getItemById = async (id, user) => {
 
-    const result = await getById(id);
+    const Item = await getById(id);
     // ---validation---
-    if (result && user.role === 'ADM' && !user._id.equals(result.adminId)) {
+    if (Item && user.role === 'ADM' && !user._id.equals(Item.adminId)) {
         return Promise.reject({ msg: "Unauthorized to access" })
     }
-    return result;
+
+    if (user.role == 'REG') {
+        const bot = await getBotByUserId(user._id)
+        let result = {
+            name: Item.name,
+            _id: Item._id,
+            description: Item.description,
+            auctionEndsAt: Item.auctionEndsAt,
+            isSoled: Item.isSoled,
+            basePrice: Item.basePrice,
+            adminId: Item.adminId,
+            currentBid: Item.currentBid,
+            botActive: false
+        }
+        if (bot?.ItemIdsForAutoBid?.find(x => Item._id.equals(x))) {
+            result.botActive = true
+            return result
+        } else return result
+    }
+
+    return Item;
 }
 
 
@@ -229,28 +249,30 @@ export const getBidsByItemId = async (itemId) => {
     }
 }
 
-//--------Bot Area--------
+// ============= BOT SERVICES =============
 
-export const toogleAutobid = async (itemId, userId, status) => {
+export const toogleAutobid = async (itemId, setStatus, user) => {
+
+    // validation check
+    if (user.role !== "REG") return Promise.reject("Unauthorized")
     // get bot
-    console.log(itemId, userId, status);
-    let bot = await getBotByUserId(userId)
+    let bot = await getBotByUserId(user._id)
     if (!bot) return Promise.reject("Cant find bot for this user")
 
     // return Promise.reject("Cant find bot for this user")
-    let { _id: botId, ItemIdsForAutoBid: itemKeys } = bot;
+    let { ItemIdsForAutoBid: itemKeys } = bot;
     // changings
     const index = itemKeys.indexOf(itemId);
-    if (status === "DEACT") {
-        if (index === -1) return bot;
+    if (setStatus === "DEACT") {
+        if (index === -1) return;
         itemKeys.splice(index, 1)
     }
-    if (status === "ACT") {
-        if (index != -1) return bot;
+    if (setStatus === "ACT") {
+        if (index != -1) return;
         itemKeys.push(itemId)
     }
     // update bot
-    const result = await updateBot(botId, { ...bot, ItemIdsForAutoBid: [...itemKeys] })
+    const result = await updateBot(bot._id, { ...bot, ItemIdsForAutoBid: [...itemKeys] })
     return result;
 }
 

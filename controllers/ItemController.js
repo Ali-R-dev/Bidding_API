@@ -8,7 +8,8 @@ import {
     getItemById,
     performBid,
     getBidsByItemId,
-    itemsByUserBids
+    itemsByUserBids,
+    toogleAutobid
 } from '../services/commonServices'
 
 // ---create an item---
@@ -42,10 +43,11 @@ export const getById = (req, res) => {
     const { id } = req.params;
     getItemById(id, req.user).then(
         resolve => {
-
+            console.log(resolve);
             return res.status(200).json(resolve)
         },
         reject => {
+            console.log(reject);
             return res.status(404).json(reject)
         }
     )
@@ -81,16 +83,16 @@ export const del = (req, res) => {
 }
 // --- get All items whome regular user bid ---
 export const getItemsByUserbids = async (req, res) => {
-    console.log("REACHED");
+
     itemsByUserBids(req.user).then(
 
         resolve => {
-            console.log(resolve);
+
             return res.status(200).json(resolve)
         },
 
         reject => {
-            console.log(reject);
+
             return res.status(400).send(reject)
         }
     )
@@ -136,4 +138,19 @@ export const getBids = async (req, res) => {
             return res.status(400).send(reject)
         }
     )
+}
+export const toogleAutoBidStatus = (req, res) => {
+    const { id: itemId } = req.params
+    const { setStatus } = req.body
+    toogleAutobid(itemId, setStatus, req.user).then(
+
+        resolve => {
+            return res.status(200).json(resolve)
+        },
+
+        reject => {
+            return res.status(400).send(reject)
+        }
+    )
+
 }
