@@ -9,7 +9,9 @@ import {
     performBid,
     getBidsByItemId,
     itemsByUserBids,
-    toogleAutobid
+    toogleAutobid,
+    updateAutoBot,
+    getAutoBotByUserId
 } from '../services/commonServices'
 
 // ---create an item---
@@ -139,6 +141,9 @@ export const getBids = async (req, res) => {
         }
     )
 }
+
+// =================BOT AREA==================
+
 export const toogleAutoBidStatus = (req, res) => {
     const { id: itemId } = req.params
     const { setStatus } = req.body
@@ -152,5 +157,29 @@ export const toogleAutoBidStatus = (req, res) => {
             return res.status(400).send(reject)
         }
     )
+}
+export const updateBot = async (req, res) => {
 
+    // const { maxBalance, notifyAt } = req.body
+    updateAutoBot(req.user, req.body).then(
+        resolve => {
+
+            return res.status(200).json(resolve)
+        },
+        reject => {
+            return res.status(400).send("No record found")
+        }
+    )
+}
+
+export const getbotByUserId = async (req, res) => {
+
+    getAutoBotByUserId(req.user).then(
+        resolve => {
+            return res.status(200).json(resolve)
+        },
+        reject => {
+            return res.status(400).send(reject)
+        }
+    )
 }

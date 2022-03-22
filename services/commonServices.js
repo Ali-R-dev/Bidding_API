@@ -153,6 +153,17 @@ export const itemsByUserBids = async (user) => {
     try {
         // [...new Set(data.map(item => item.Group))]
         const bids = await getBidsByUserId(user._id)
+        // 
+        // let ItemKeys = [... new Set(bids.map((b) => String(b.itemId)))]
+        // console.log(ItemKeys);
+        // const tst = []
+        // for (let i in ItemKeys) {
+        //     const itmKey = ItemKeys[i]
+        //     const item = await getItemById(itmKey, user)
+        //     tst.push(item)
+        // }
+        // console.log(tst);
+        // 
         let items = []
         for (let b in bids) {
             const bid = bids[b]
@@ -189,7 +200,7 @@ export const performBid = async (itemId, bidAmount, user) => {
         // get current item
         const item = await getById(itemId);
 
-        console.log(itemId, bidAmount, user.userId);
+        console.log(itemId, bidAmount, user._id);
 
         // perform checks
         if (!item) return Promise.reject({ msg: "cant find item" });
@@ -203,8 +214,8 @@ export const performBid = async (itemId, bidAmount, user) => {
             const res = await getBidById(item.currentBid)
             if (res) currentBidObj = res
         }
-
-        if (user._id.equals(currentBidObj?.userId)) return ({ msg: "You already have higher bid", status: true });
+        console.log(user._id, currentBidObj?.userId);
+        if (String(user._id) == String(currentBidObj?.userId)) return ({ msg: "You already have higher bid", status: true });
 
         if (bidAmount <= Math.max(parseInt(item.basePrice), currentBidObj.bidPrice)) return Promise.reject("your bid is less then current bid")
 
@@ -249,7 +260,7 @@ export const getBidsByItemId = async (itemId) => {
     }
 }
 
-// ============= BOT SERVICES =============
+// ============= BOT AREA =============
 
 export const toogleAutobid = async (itemId, setStatus, user) => {
 
@@ -273,6 +284,7 @@ export const toogleAutobid = async (itemId, setStatus, user) => {
     }
     // update bot
     const result = await updateBot(bot._id, { ...bot, ItemIdsForAutoBid: [...itemKeys] })
+    getIo().to(itemId).emit("updatedData")
     return result;
 }
 
@@ -280,12 +292,12 @@ export const getAllAutoBots = async () => {
     const result = await getBots();
     return result;
 }
-export const getAutoBotByUserId = async (id) => {
-    const result = await getBotByUserId(id)
+export const getAutoBotByUserId = async (user) => {
+    const result = await getBotByUserId(user._id)
     return result;
 }
-export const updateAutoBot = async (userId, bot) => {
-    const result = await updateBotByUserId(userId, bot)
+export const updateAutoBot = async (user, bot) => {
+    const result = await updateBotByUserId(user._id, bot)
     return result;
 }
 export const getAutoAlert = async (userId) => {

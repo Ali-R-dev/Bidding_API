@@ -10,10 +10,5 @@ const BidderBotSchema = new Schema({
 
     ItemIdsForAutoBid: Array,
 
-    // notifications: [{
-    //     time: Date,
-    //     typeCode: Number,
-    //     message: String
-    // }]
 });
 export default mongoose.model("BidderBot", BidderBotSchema);
