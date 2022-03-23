@@ -20,12 +20,38 @@ export const fetchItemsList = async (user, query) => {
         const { page, search } = query
         let result = [];
         // --- filtration ---
+
+        let filterQuery = {};
+        if (search != undefined) {
+
+            filterQuery = {
+                $or: [
+                    { name: { $regex: new RegExp(search, "i") } },
+                    { description: { $regex: new RegExp(search, "i") } }
+                ]
+            }
+        }
+
         if (user.role === 'ADM') {
-            result = await (await get(search)).filter(item => user._id.equals(item.adminId));
+            result = await (await get(filterQuery)).filter(item => user._id.equals(item.adminId));
         }
         else {
-            result = await get(search);
+            result = await get(filterQuery);
         }
+
+        for (let i in result) {
+
+
+            const currentbid = await getBidById(result[i].currentBid)
+            result[i].currentBid = currentbid
+
+        }
+        // 
+        result.sort((a, b) => {
+            return (b?.currentBid?.bidPrice || b.basePrice) - (a?.currentBid?.bidPrice || a.basePrice)
+        }
+        )
+        // 
 
         const pageOptions = {
             total: 0,
@@ -136,6 +162,8 @@ export const deleteItem = async (id, user) => {
 
         if (!user._id.equals(item.adminId)) return Promise.reject({ msg: "Unauthorized to delete" })
 
+        if (item.currentBid) return Promise.reject({ msg: "Can not delete,in bidding process" })
+
         if (item.isSoled) return Promise.reject({ msg: "canot delete , item already sold" })
 
         // ---del
@@ -151,34 +179,36 @@ export const deleteItem = async (id, user) => {
 export const itemsByUserBids = async (user) => {
 
     try {
-        // [...new Set(data.map(item => item.Group))]
+
         const bids = await getBidsByUserId(user._id)
         // 
-        // let ItemKeys = [... new Set(bids.map((b) => String(b.itemId)))]
-        // console.log(ItemKeys);
-        // const tst = []
-        // for (let i in ItemKeys) {
-        //     const itmKey = ItemKeys[i]
-        //     const item = await getItemById(itmKey, user)
-        //     tst.push(item)
-        // }
-        // console.log(tst);
-        // 
-        let items = []
-        for (let b in bids) {
-            const bid = bids[b]
-            const item = await getItemById(bid.itemId, user)
+        const ItemKeys = [... new Set(bids.map((b) => String(b.itemId)))]
 
-            const n = items.find(itm => itm._id.equals(item._id))
-            if (!n) {
-                const currentBid = await getBidById(item._id)
-                const res = {
-                    _id: item._id, name: item.name, isSoled: item.isSoled, currentBid: currentBid
-                }
-                items.push(res)
-            }
+        let res = []
+        for (let i in ItemKeys) {
+            const itmKey = ItemKeys[i]
+            const item = await getItemById(itmKey, user)
+            const currentBid = await getBidById(item.currentBid)
+            res.push({
+                _id: item._id, name: item.name, isSoled: item.isSoled, currentBid: currentBid
+            })
         }
-        return items;
+        // 
+        // let items = []
+        // for (let b in bids) {
+        //     const bid = bids[b]
+        //     const item = await getItemById(bid.itemId, user)
+
+        //     const n = items.find(itm => itm._id.equals(item._id))
+        //     if (!n) {
+        //         const currentBid = await getBidById(item._id)
+        //         const res = {
+        //             _id: item._id, name: item.name, isSoled: item.isSoled, currentBid: currentBid
+        //         }
+        //         items.push(res)
+        //     }
+        // }
+        return res;
     } catch (error) {
         const { message } = error
         console.log(error);
@@ -248,10 +278,11 @@ export const getBidsByItemId = async (itemId) => {
                     userName: user.userName
                 })
             }
+            result.sort((a, b) => {
+                return b.bidPrice - a.bidPrice;
+            })
         }
-        result.sort((a, b) => {
-            return new Date(b.createdAt) - new Date(a.createdAt);
-        })
+
         return result;
 
     } catch (error) {

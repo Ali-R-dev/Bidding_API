@@ -1,6 +1,6 @@
 import Mongoose from 'mongoose';
 import { getActiveBots, updateBotByUserId } from '../DAL/biderBotDbOperations';
-import { getById as getItemById } from '../DAL/itemDbOperations';
+import { getById as getItemById, get as getItems, update as updateItem } from '../DAL/itemDbOperations';
 import { performBid, toogleAutobid, updateAutoBot } from '../services/commonServices'
 import { getUser } from '../DAL/userDbOperations'
 import { getBidById } from '../DAL/bidDbOperations'
@@ -20,13 +20,10 @@ const ExecBidderBots = async () => {
 
         let itemIdsList = bot.ItemIdsForAutoBid;
 
-
         for (const j in itemIdsList) {
             let itemId = itemIdsList[j]
 
-
             const item = await getItemById(itemId);
-
             // ------------------------------------------
             const newBidPrice = await getNextBidPrice(bot, item);
             if (!newBidPrice) {
@@ -35,15 +32,6 @@ const ExecBidderBots = async () => {
                 });
                 continue;
             }
-            console.log("need new bid", bot.userId);
-            // if (await calculateMaxAmount(bot, itemId, newBidPrice)) {
-            //     console.log("inside if");
-            //     // await createNotificationArray(bot, `Autobidding stopped for " ${item.name} " due to lack of amount`, 1)
-            //     // await toogleAutobid(itemId, bot.userId, "DEACT");
-            //     // continue;
-            // }
-
-
             await performBid(itemId, newBidPrice,
                 {
 
@@ -59,7 +47,6 @@ const ExecBidderBots = async () => {
                         } else {
                             console.log("Auto bid performed by ", bot.userId, resol)
                         }
-
                     }
                     ,
                     async (rej) => {
@@ -75,20 +62,11 @@ const ExecBidderBots = async () => {
     }
 }
 
-
-
 const getNextBidPrice = async (bot, currentItem) => {
 
     let amount = 0;
     let currentItemPrice = 0;
     let itemIdsList = bot.ItemIdsForAutoBid
-
-    // const currentBid = await getBidById(currentItem.currentBid);
-    // let newBidPrice = Math.max(currentItem.basePrice, (currentBid?.bidPrice || 0)) + 1;
-
-    // ----------------- itemIdsList = itemIdsList.filter(i => i !== currentItemId)
-
-
 
     for (const i in itemIdsList) {
 
@@ -103,7 +81,6 @@ const getNextBidPrice = async (bot, currentItem) => {
 
             continue;
         }
-
         const bid = await getBidById(item.currentBid);
 
         if (bid.userId.equals(bot.userId)) {
@@ -113,15 +90,6 @@ const getNextBidPrice = async (bot, currentItem) => {
             if (item._id.equals(currentItem._id))
                 currentItemPrice = bid.bidPrice
         }
-
-        // if (bid.userId.equals(bot.userId)) {
-
-        //     if (!item._id.equals(currentItem._id)) {
-        //         amount = amount + bid.bidPrice;
-        //     } else {
-        //         currentItemPrice = bid.bidPrice
-        //     }
-        // }
     }
     const newBidPrice = currentItemPrice + 1;
 
@@ -131,39 +99,6 @@ const getNextBidPrice = async (bot, currentItem) => {
         return newBidPrice
     }
     return undefined;
-
-    // bot ,item
-
-    /*
-
-itemsList
-
-    select item
-    get selected bid
-    chek if users are same
-    True -> update total
-    false -> ignore 
-
-
-
-
-    */
-
-
-
-    // const percent = ((amount + currentItemPrice) / bot.maxBalance) * 100;
-    // console.log(percent, amount, bot.notifyAt);
-    // if (percent > bot.notifyAt) {
-
-    //     console.log(`Bot already used ${percent} % amount`);
-    //     // await createNotificationArray(bot, `Bot already used ${percent} % amount`, 2)
-    // }
-
-    // if (newBidPrice + amount > bot.maxBalance) {
-    //     return true
-    // }
-    // return false
-
 }
 
 // const createNotificationArray = async (bot, message, code) => {
@@ -180,9 +115,9 @@ itemsList
 // }
 
 
-export const RunBidderBots = async () => {
 
-    //await ExecBidderBots()
+
+export const RunBotService = async () => {
 
     let lock = false;
     setInterval(async () => {
@@ -194,7 +129,6 @@ export const RunBidderBots = async () => {
             console.log("-end bot-");
             lock = false
         }
-
         console.log("--end interval--");
     }, 2000);
 }

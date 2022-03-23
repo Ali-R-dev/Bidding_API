@@ -7,9 +7,11 @@ import Cors from 'cors'
 import DbConnect from './db/DbConnect'
 import config from 'config'
 import { Auth } from './Middlewares/Auth'
-import { RunBidderBots } from './services/botService'
+import { RunBotService } from './services/botService'
+import { RunCoreServices } from './services/CoreServices'
 import { InitSocket } from './services/MySocketIo'
-
+import easyinvoice from 'easyinvoice'
+import fs from 'fs'
 // ---server instance cretion---
 import express from "express";
 import { createServer } from "http";
@@ -26,40 +28,11 @@ app.use(Auth)
 // ---server---
 const httpServer = createServer(app);
 InitSocket(httpServer)
-// const io = new Server(httpServer, {
-//     cors: {
-//         origin: "*",
-//         methods: ['GET', 'POST']
-//     }
-// });
 
-
-// io.on("connection", (socket) => {
-//     io.emit("message", { message: "hello" });
-//     socket.on("startLiveUpdates", (id) => {
-//         socket.join(id);
-//         console.log("room joined: ", id);
-//     });
-//     socket.on("StopLiveUpdates", (id) => {
-//         socket.leave(id);
-//         console.log("room leaved : ", id);
-//     });
-// });
-// setInterval(() => {
-//     let rooms = Array.from(io.sockets.adapter.rooms);
-//     const filtered = rooms.filter((room) => !room[1].has(room[0]));
-//     const res = filtered.map((i) => i[0]);
-//     console.log("no of rooms :", res);
-//     // const n = res.find((r) => r === "123");
-//     // if (n) io.to("123").emit("updatedData");
-// }, 2000);
-// -------
 
 // --- Routing ---
 app.use("/api/login", loginRoute);
 app.use("/api/items", itemRoutes);
-// app.use("/api/user", userRoutes);
-// app.use("/api/adm", adminRoutes);
 app.use("*", (req, res) => res.status(404).send("route not found"));
 // ---------------
 
@@ -73,9 +46,14 @@ DbConnect(DbUri).then(
         httpServer.listen(PORT)
         console.log(`server running on port ${PORT}`)
 
-        //--start biider bots service---
+        // ---backend services---
         setTimeout(() => {
-            //RunBidderBots();
+            // ---bot service---
+            //RunBotService();
+
+            // ====ALERT-DONT DISABLE CORE SERVICES-ALERT====
+            //RunCoreServices()
         }, 2000);
+
     }
 )

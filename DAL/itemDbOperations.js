@@ -9,20 +9,9 @@ export const create = async (itemObj) => {
 
 }
 
-export const get = async (search) => {
-    let filterQuery = {};
-    if (search != undefined) {
-
-        filterQuery = {
-            $or: [
-                { name: { $regex: search } },
-                { description: { $regex: search } }
-            ]
-        }
-    }
+export const get = async (filterQuery) => {
 
     const result = await Item.find(filterQuery);
-    // .sort({ 'basePrice': 'asc', 'currentBid.price': 'asc' })
     return result;
 }
 
