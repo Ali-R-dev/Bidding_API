@@ -11,7 +11,8 @@ import {
     itemsByUserBids,
     toogleAutobid,
     updateAutoBot,
-    getAutoBotByUserId
+    getAutoBotByUserId,
+    getInvoiceByItemId
 } from '../services/commonServices'
 
 // ---create an item---
@@ -175,6 +176,17 @@ export const updateBot = async (req, res) => {
 export const getbotByUserId = async (req, res) => {
 
     getAutoBotByUserId(req.user).then(
+        resolve => {
+            return res.status(200).json(resolve)
+        },
+        reject => {
+            return res.status(400).send(reject)
+        }
+    )
+}
+export const getInvoice = async (req, res) => {
+    const { id: itemId } = req.params
+    getInvoiceByItemId(itemId, req.user).then(
         resolve => {
             return res.status(200).json(resolve)
         },

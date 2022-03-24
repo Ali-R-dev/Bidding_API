@@ -1,4 +1,4 @@
-import { type } from "express/lib/response";
+
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 const InvoiceSchema = new Schema({

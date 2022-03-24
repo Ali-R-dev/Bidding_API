@@ -1,7 +1,7 @@
 import express from 'express'
 // import {getById, newBid, toogleAutoBidStatus, updateBot, getbotByUserId } from '../controllers/UserController'
 
-import { create, get, getById, update, del, newBid, getBids, getItemsByUserbids, toogleAutoBidStatus, getbotByUserId, updateBot } from '../controllers/ItemController'
+import { create, get, getById, update, del, newBid, getBids, getItemsByUserbids, toogleAutoBidStatus, getbotByUserId, updateBot, getInvoice } from '../controllers/ItemController'
 
 const router = express.Router();
 
@@ -11,9 +11,8 @@ const router = express.Router();
 //     .get(getbotByUserId)
 //     .put(updateBot);
 
-// router.route("/bids")
-//     .get(getbotByUserId)
-//     .put(updateBot);
+router.route("/invoice/:id")
+    .get(getInvoice);
 
 router.route("/bot")
     .get(getbotByUserId)

@@ -1,4 +1,4 @@
-import Mongoose from 'mongoose';
+import { saveInvoice } from '../DAL/InvoiceDbOperations'
 import { getActiveBots, updateBotByUserId } from '../DAL/biderBotDbOperations';
 import { getById as getItemById, get as getItems, update as updateItem } from '../DAL/itemDbOperations';
 import { performBid, toogleAutobid, updateAutoBot } from './commonServices'
@@ -6,7 +6,8 @@ import { getUser } from '../DAL/userDbOperations'
 import { getBidById } from '../DAL/bidDbOperations'
 import easyinvoice from 'easyinvoice';
 import fs from 'fs'
-const ItemSoldingProcess = async () => {
+import { getUserById } from './userService';
+export const ItemSoldingProcess = async () => {
 
     const Items = await getItems({
         auctionEndsAt: { $lt: new Date().toISOString() }
@@ -15,23 +16,25 @@ const ItemSoldingProcess = async () => {
     for (let i in Items) {
 
         if (Items[i].currentBid) {
-            await updateItem(Items[i]._id, { isSoled: true }, true)
+
+            const bid = await getBidById(Items[i].currentBid)
+            const user = await getUserById(bid.userId)
+            await createInvoice(Items[i], user, bid)
+            //await updateItem(Items[i]._id, { isSoled: true }, true)
         }
     }
 }
-const createInvoice = (item, user, bid) => {
+const createInvoice = async (item, user, bid) => {
     const getDate = () => {
         let dt = new Date();
         const dateNow = dt.toISOString().split('T')[0].split('-').reverse().join('-');
         dt = dt.setDate(dt.getDate() + 15);
-        const dateEnd = dt.toISOString().split('T')[0].split('-').reverse().join('-');
+        const dateEnd = new Date(dt).toISOString().split('T')[0].split('-').reverse().join('-');
+
         return [dateNow, dateEnd]
     }
-    // item.name.split(' ').join('_');
-    // const InvoiceCode ="userId+ +getDate()[0]";
 
-
-
+    const invoiceCode = new Date().getTime();
     const data = {
         "images": {
             "background": "https://public.easyinvoice.cloud/pdf/sample-background.pdf"
@@ -44,23 +47,23 @@ const createInvoice = (item, user, bid) => {
             "country": "Samplecountry"
         },
         "client": {
-            "company": user.userName,
+            "company": `${user.userName}`,
             "address": "Clientstreet 456",
             "zip": "4567 CD",
             "city": "Clientcity",
             "country": "Clientcountry"
         },
         "information": {
-            "number": "2022.0001",
-            "date": getDate()[0],
-            "due-date": getDate()[1]
+            "number": `${invoiceCode}`,
+            "date": `${getDate()[0]}`,
+            "due-date": `${getDate()[1]}`
         },
         "products": [
             {
                 "quantity": "1",
-                "description": item.name,
+                "description": `${item.name}`,
                 "tax-rate": 0,
-                "price": bid.bidPrice
+                "price": `${bid.bidPrice}`
             }
         ],
         "bottom-notice": "Kindly pay your invoice within 15 days.",
@@ -74,12 +77,27 @@ const createInvoice = (item, user, bid) => {
         }
     }
 
-    easyinvoice.createInvoice(data, function (result) {
+    const pdfInvoice = await easyinvoice.createInvoice(data);
 
-        console.log('PDF base64 string: ', result.pdf);
-        fs.writeFileSync("invoice.pdf", pdf, 'base64');
-    });
+    await fs.writeFileSync(`Invoice_Docs/${invoiceCode}.pdf`, pdfInvoice.pdf, 'base64');
+    const newInv = {
+        invoiceCode: invoiceCode,
+        userId: user._id,
+        itemId: item._id,
+        createdAt: new Date().toISOString(),
+    };
+
+    const res = await saveInvoice(newInv);
+    console.log(res);
+
+    // Now this result can be used to save, download or render your invoice
+    // Please review the documentation below on how to do this
+    // easyinvoice.createInvoice(data, function (result) {
+
+    //     fs.writeFileSync(invoice.pdf, pdf, 'base64');
+    // });
 }
+
 const createEmailNotification = (item) => {
 
 

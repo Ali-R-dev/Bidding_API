@@ -15,10 +15,8 @@ export const getInvoiceByUser = async (userId) => {
     return res;
 }
 
-export const create = async (inv) => {
-    let newInvoice = new Invoice({
-        ...inv
-    })
+export const saveInvoice = async (inv) => {
+    let newInvoice = new Invoice(inv)
     const res = await newInvoice.save();
     return res
 }

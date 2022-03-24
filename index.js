@@ -8,7 +8,7 @@ import DbConnect from './db/DbConnect'
 import config from 'config'
 import { Auth } from './Middlewares/Auth'
 import { RunBotService } from './services/botService'
-import { RunCoreServices } from './services/CoreServices'
+import { RunCoreServices, ItemSoldingProcess } from './services/CoreServices'
 import { InitSocket } from './services/MySocketIo'
 import easyinvoice from 'easyinvoice'
 import fs from 'fs'
@@ -50,7 +50,7 @@ DbConnect(DbUri).then(
         setTimeout(() => {
             // ---bot service---
             //RunBotService();
-
+            // ItemSoldingProcess()
             // ====ALERT-DONT DISABLE CORE SERVICES-ALERT====
             //RunCoreServices()
         }, 2000);

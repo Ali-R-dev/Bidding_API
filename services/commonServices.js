@@ -1,4 +1,5 @@
 
+import fs from 'fs'
 import { getBotById, getBotByUserId, getBots, updateBot, updateBotByUserId } from '../DAL/biderBotDbOperations';
 
 import {
@@ -8,6 +9,7 @@ import {
     update,
     del
 } from '../DAL/itemDbOperations'
+import { getInvoiceByUser } from '../DAL/InvoiceDbOperations'
 
 import { getUserById } from './userService';
 
@@ -180,7 +182,9 @@ export const itemsByUserBids = async (user) => {
 
     try {
 
-        const bids = await getBidsByUserId(user._id)
+        const bids = await (await getBidsByUserId(user._id)).sort((a, b) => {
+            return b.bidPrice - a.bidPrice
+        })
         // 
         const ItemKeys = [... new Set(bids.map((b) => String(b.itemId)))]
 
@@ -190,24 +194,19 @@ export const itemsByUserBids = async (user) => {
             const item = await getItemById(itmKey, user)
             const currentBid = await getBidById(item.currentBid)
             res.push({
-                _id: item._id, name: item.name, isSoled: item.isSoled, currentBid: currentBid
+                _id: item._id, name: item.name, isSoled: item.isSoled, currentBid: currentBid, bids: []
             })
         }
-        // 
-        // let items = []
-        // for (let b in bids) {
-        //     const bid = bids[b]
-        //     const item = await getItemById(bid.itemId, user)
+        for (let b in bids) {
 
-        //     const n = items.find(itm => itm._id.equals(item._id))
-        //     if (!n) {
-        //         const currentBid = await getBidById(item._id)
-        //         const res = {
-        //             _id: item._id, name: item.name, isSoled: item.isSoled, currentBid: currentBid
-        //         }
-        //         items.push(res)
-        //     }
-        // }
+            const n = res.findIndex(i => String(bids[b].itemId) == String(i._id))
+            res[n].bids.push(bids[b])
+
+        }
+        res.sort((a, b) => {
+            return new Date(b.currentBid.createdAt).getTime() - new Date(a.currentBid.createdAt).getTime()
+        })
+
         return res;
     } catch (error) {
         const { message } = error
@@ -290,6 +289,19 @@ export const getBidsByItemId = async (itemId) => {
         return Promise.reject(message)
     }
 }
+// ======INVOICE=======
+export const getInvoiceByItemId = async (itemId, user) => {
+
+    const invoiceObj = await getInvoiceByUser(itemId);
+
+    if (!invoiceObj) Promise.reject({ msg: "Not Found" })
+
+    if (user.role === 'ADM' || !invoiceObj.userId.equals(user._id)) Promise.reject({ msg: "unauthorized" })
+
+
+
+
+}
 
 // ============= BOT AREA =============
 
@@ -352,3 +364,4 @@ export const getAutoAlert = async (userId) => {
     if (bot.notifyAt <= percent) return true
     return false
 }
+
