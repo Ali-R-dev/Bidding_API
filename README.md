@@ -12,7 +12,7 @@ To start Running server Run:
 ### `npm run dev`
 
 server configurations can be modified on config file like port , url address etc.
+
 server runs at http//localhost:3001 (by default)
 
-Users (admins and regulars) are not saved in mongodb but hardcoded inside server config files.
-https://www.getpostman.com/collections/2bcc8a77b20f85a53485
+Postman API documentation : https://www.getpostman.com/collections/2bcc8a77b20f85a53485
