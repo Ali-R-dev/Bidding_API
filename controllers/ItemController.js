@@ -1,4 +1,4 @@
-// import { fetchItemsList, getItemById, performBid, toogleAutobid, getAllAutoBots, getAutoBotByUserId, updateAutoBot, getAutoAlert } from '../services/commonServices'
+
 import app from 'express'
 import {
     fetchItemsList,
@@ -52,9 +52,7 @@ export const getById = (req, res) => {
         reject => {
             console.log(reject);
             return res.status(404).json(reject)
-        }
-    )
-
+        })
 }
 // ---update---
 export const update = (req, res) => {
@@ -68,8 +66,7 @@ export const update = (req, res) => {
         reject => {
             console.log(reject);
             return res.status(400).json(reject)
-        }
-    )
+        })
 }
 // ---Delete an item----
 export const del = (req, res) => {
@@ -81,8 +78,7 @@ export const del = (req, res) => {
         },
         reject => {
             return res.status(400).json(reject)
-        }
-    )
+        })
 }
 // --- get All items whome regular user bid ---
 export const getItemsByUserbids = async (req, res) => {
@@ -90,19 +86,13 @@ export const getItemsByUserbids = async (req, res) => {
     itemsByUserBids(req.user).then(
 
         resolve => {
-
             return res.status(200).json(resolve)
         },
 
         reject => {
-
             return res.status(400).send(reject)
-        }
-    )
+        })
 }
-
-
-
 
 // ======== Bidding Area ========
 
@@ -116,10 +106,9 @@ export const newBid = async (req, res) => {
 
         resolve => {
             if (resolve.status) return res.status(400).send(resolve)
-
+            
             return res.status(200).json(resolve)
         },
-
         reject => {
             console.log("rejected", reject)
             return res.status(400).send(reject)
@@ -132,15 +121,12 @@ export const getBids = async (req, res) => {
     const { id: itemId } = req.params
 
     getBidsByItemId(itemId).then(
-
         resolve => {
             return res.status(200).json(resolve)
         },
-
         reject => {
             return res.status(400).send(reject)
-        }
-    )
+        })
 }
 
 // =================BOT AREA==================
@@ -153,11 +139,9 @@ export const toogleAutoBidStatus = (req, res) => {
         resolve => {
             return res.status(200).json(resolve)
         },
-
         reject => {
             return res.status(400).send(reject)
-        }
-    )
+        })
 }
 export const updateBot = async (req, res) => {
 
@@ -169,8 +153,7 @@ export const updateBot = async (req, res) => {
         },
         reject => {
             return res.status(400).send("No record found")
-        }
-    )
+        })
 }
 
 export const getbotByUserId = async (req, res) => {
@@ -181,8 +164,7 @@ export const getbotByUserId = async (req, res) => {
         },
         reject => {
             return res.status(400).send(reject)
-        }
-    )
+        })
 }
 export const getInvoice = async (req, res) => {
     const { id: itemId } = req.params
@@ -192,6 +174,5 @@ export const getInvoice = async (req, res) => {
         },
         reject => {
             return res.status(400).send(reject)
-        }
-    )
+        })
 }
