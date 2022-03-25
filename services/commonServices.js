@@ -9,7 +9,7 @@ import {
     update,
     del
 } from '../DAL/itemDbOperations'
-import { getInvoiceByUser } from '../DAL/InvoiceDbOperations'
+import { getInvoiceByItem } from '../DAL/InvoiceDbOperations'
 
 import { getUserById } from './userService';
 
@@ -290,13 +290,23 @@ export const getBidsByItemId = async (itemId) => {
     }
 }
 // ======INVOICE=======
+
 export const getInvoiceByItemId = async (itemId, user) => {
 
-    const invoiceObj = await getInvoiceByUser(itemId);
+    try {
+        const invoiceObj = await getInvoiceByItem(itemId);
 
-    if (!invoiceObj) Promise.reject({ msg: "Not Found" })
+        if (!invoiceObj) Promise.reject({ msg: "Not Found" })
 
-    if (user.role === 'ADM' || !invoiceObj.userId.equals(user._id)) Promise.reject({ msg: "unauthorized" })
+        if (user.role === 'ADM' || !invoiceObj.userId.equals(user._id)) Promise.reject({ msg: "unauthorized" })
+
+        return invoiceObj
+    } catch (error) {
+        const { message } = error;
+        return Promise.reject(message)
+    }
+
+
 
 
 
@@ -327,7 +337,10 @@ export const toogleAutobid = async (itemId, setStatus, user) => {
     }
     // update bot
     const result = await updateBot(bot._id, { ...bot, ItemIdsForAutoBid: [...itemKeys] })
+
     getIo().to(itemId).emit("updatedData")
+
+
     return result;
 }
 

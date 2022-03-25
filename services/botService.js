@@ -3,6 +3,7 @@ import { getActiveBots, updateBotByUserId } from '../DAL/biderBotDbOperations';
 import { getById as getItemById, get as getItems, update as updateItem } from '../DAL/itemDbOperations';
 import { performBid, toogleAutobid, updateAutoBot } from '../services/commonServices'
 import { getUser } from '../DAL/userDbOperations'
+import { createEmailNotification } from './CoreServices'
 import { getBidById } from '../DAL/bidDbOperations'
 const ExecBidderBots = async () => {
 
@@ -30,6 +31,9 @@ const ExecBidderBots = async () => {
                 await toogleAutobid(itemId, "DEACT", {
                     _id: bot.userId, role: "REG"
                 });
+                await notify(bot.userId, item.name)
+
+
                 continue;
             }
             await performBid(itemId, newBidPrice,
@@ -42,24 +46,38 @@ const ExecBidderBots = async () => {
 
                         if (resol.status) {
                             console.log("Cannot perform:", resol.msg);
-
-                            // await createNotificationArray(bot, `Bid performed by autobidder on " ${item.name} " `, 0)
                         } else {
                             console.log("Auto bid performed by ", bot.userId, resol)
                         }
                     }
                     ,
                     async (rej) => {
-                        // await createNotificationArray(bot, `Autobidding stopped for " ${item.name} "`, 1)
+
                         console.log("cannot perform bid ", rej);
                         await toogleAutobid(itemId, "DEACT", {
                             _id: bot.userId, role: 'REG'
                         });
+                        await notify(bot.userId, item.name)
                     });
 
         }
         console.log("---out---", bot.userId);
     }
+}
+
+const notify = async (usrId, itemName, notification) => {
+
+    const user = await getUser({
+        _id: usrId
+    })
+    createEmailNotification({
+        user: user,
+        notification:
+        {
+            title: notification.title || "AutoBidder Alert",
+            desc: notification.desc || `You AutoBidder is turned of for " ${itemName} " . Thanks`
+        }
+    })
 }
 
 const getNextBidPrice = async (bot, currentItem) => {
@@ -93,14 +111,20 @@ const getNextBidPrice = async (bot, currentItem) => {
     }
     const newBidPrice = currentItemPrice + 1;
 
-    console.log(",N:", newBidPrice, ",T:", (amount + newBidPrice), ",M:", bot.maxBalance, ",S:", bot.maxBalance > (amount + newBidPrice));
+    const getPercent = ((newBidPrice + amount) / bot.maxBalance) * 100;
+
+    if (getPercent => bot.notifyAt) {
+        await notify(bot.userId, "", { title: "Bot Fund Usage Alert", desc: ` Bot Crossed your Notification Limit ${bot.notifyAt}%.` })
+    }
 
     if ((newBidPrice + amount) <= bot.maxBalance) {
         return newBidPrice
     }
     return undefined;
 }
+const checkForLimitAlert = () => {
 
+}
 // const createNotificationArray = async (bot, message, code) => {
 
 //     let notifyList = bot.notifications;
@@ -113,7 +137,6 @@ const getNextBidPrice = async (bot, currentItem) => {
 //     await updateBotByUserId(bot.userId, { notifications: notifyList })
 //     return;
 // }
-
 
 
 

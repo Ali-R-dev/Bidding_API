@@ -21,7 +21,10 @@ const InvoiceSchema = new Schema({
         type: Date,
         required: [true, 'createdAt is mandatory']
     },
-    note: String
+    base64String: {
+        type: String,
+        required: [true, 'base64String is mandatory']
+    }
 
 
 });

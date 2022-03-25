@@ -6,6 +6,7 @@ import { getUser } from '../DAL/userDbOperations'
 import { getBidById } from '../DAL/bidDbOperations'
 import easyinvoice from 'easyinvoice';
 import fs from 'fs'
+import nodemailer from 'nodemailer';
 import { getUserById } from './userService';
 export const ItemSoldingProcess = async () => {
 
@@ -15,12 +16,12 @@ export const ItemSoldingProcess = async () => {
 
     for (let i in Items) {
 
-        if (Items[i].currentBid) {
+        if (Items[i].currentBid && !Items[i].isSoled) {
 
             const bid = await getBidById(Items[i].currentBid)
             const user = await getUserById(bid.userId)
             await createInvoice(Items[i], user, bid)
-            //await updateItem(Items[i]._id, { isSoled: true }, true)
+            await updateItem(Items[i]._id, { isSoled: true }, true)
         }
     }
 }
@@ -79,16 +80,27 @@ const createInvoice = async (item, user, bid) => {
 
     const pdfInvoice = await easyinvoice.createInvoice(data);
 
-    await fs.writeFileSync(`Invoice_Docs/${invoiceCode}.pdf`, pdfInvoice.pdf, 'base64');
+    // await fs.writeFileSync(`Invoice_Docs/${invoiceCode}.pdf`, pdfInvoice.pdf, 'base64');
     const newInv = {
         invoiceCode: invoiceCode,
         userId: user._id,
         itemId: item._id,
+        base64String: pdfInvoice.pdf,
         createdAt: new Date().toISOString(),
     };
 
     const res = await saveInvoice(newInv);
-    console.log(res);
+
+    createEmailNotification({
+        invoice: res,
+        user: user,
+        notification:
+        {
+            title: "Invoice of Item sold",
+            desc: `You have won the bidding for " ${item.name} ".
+              The Invoice of Item is Attached. Please Pay it within 15 days to claim the item. Thanks`
+        }
+    })
 
     // Now this result can be used to save, download or render your invoice
     // Please review the documentation below on how to do this
@@ -98,7 +110,48 @@ const createInvoice = async (item, user, bid) => {
     // });
 }
 
-const createEmailNotification = (item) => {
+export const createEmailNotification = (props) => {
+    const { invoice, user, notification } = props
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'arb7243@gmail.com',
+            pass: 'Za.Xs.cvbnm123'
+        },
+        tls: {
+            rejectUnauthorized: false
+        }
+    })
+
+    const mailOptions = {
+
+        from: 'arb7243@gmail.com',
+
+        // Comma Separated list of mails
+        to: user.email,
+
+        // Subject of Email
+        subject: notification.title,
+
+        // This would be the text of email body
+        text: notification.desc,
+
+        attachments: []
+
+    };
+    if (invoice) mailOptions.attachments.push({
+        filename: `${invoice.invoiceCode}.pdf`,
+        content: invoice.base64String, //EncodedString
+        encoding: 'base64'
+    })
+
+    transporter.sendMail(mailOptions, function (err, succ) {
+
+        if (err) console.log(err)
+        else console.log(succ)
+
+    })
 
 
 }
