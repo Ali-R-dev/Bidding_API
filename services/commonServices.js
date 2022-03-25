@@ -163,10 +163,10 @@ export const deleteItem = async (id, user) => {
         if (!item) return Promise.reject({ msg: "No item found" })
 
         if (!user._id.equals(item.adminId)) return Promise.reject({ msg: "Unauthorized to delete" })
+        
+         if (item.isSoled) return Promise.reject({ msg: "canot delete , item already sold" })
 
         if (item.currentBid) return Promise.reject({ msg: "Can not delete,in bidding process" })
-
-        if (item.isSoled) return Promise.reject({ msg: "canot delete , item already sold" })
 
         // ---del
         const result = await del(id);
@@ -201,7 +201,6 @@ export const itemsByUserBids = async (user) => {
 
             const n = res.findIndex(i => String(bids[b].itemId) == String(i._id))
             res[n].bids.push(bids[b])
-
         }
         res.sort((a, b) => {
             return new Date(b.currentBid.createdAt).getTime() - new Date(a.currentBid.createdAt).getTime()
@@ -213,30 +212,21 @@ export const itemsByUserBids = async (user) => {
         console.log(error);
         return Promise.reject({ msg: message })
     }
-
 }
 
-
 // ============= Bid Area =============
-
 
 export const performBid = async (itemId, bidAmount, user) => {
 
     try {
-
+        
         if (user.role !== "REG") return Promise.reject("Unauthorized to bid");
-
         // get current item
         const item = await getById(itemId);
-
-        console.log(itemId, bidAmount, user._id);
-
         // perform checks
         if (!item) return Promise.reject({ msg: "cant find item" });
 
         if (new Date().getTime() >= new Date(item.auctionEndsAt).getTime()) return Promise.reject({ msg: "time already ellapsed" });
-
-        // if (new Date().toUTCString() >= new Date(item.auctionEndsAt).toUTCString()) return Promise.reject({ msg: "time already ellapsed" });
 
         let currentBidObj = { bidPrice: 0.0 };
         if (item?.currentBid) {
@@ -306,11 +296,6 @@ export const getInvoiceByItemId = async (itemId, user) => {
         return Promise.reject(message)
     }
 
-
-
-
-
-
 }
 
 // ============= BOT AREA =============
@@ -356,25 +341,25 @@ export const updateAutoBot = async (user, bot) => {
     const result = await updateBotByUserId(user._id, bot)
     return result;
 }
-export const getAutoAlert = async (userId) => {
+// export const getAutoAlert = async (userId) => {
 
-    const bot = await getBotByUserId(userId)
-    let amount = 0;
+//     const bot = await getBotByUserId(userId)
+//     let amount = 0;
 
-    for (const i in ItemIdsForAutoBid) {
+//     for (const i in ItemIdsForAutoBid) {
 
-        const itemId = ItemIdsForAutoBid[i];
+//         const itemId = ItemIdsForAutoBid[i];
 
-        const item = await getItemById(itemId);
+//         const item = await getItemById(itemId);
 
-        if (newBidPrice + amount > bot.maxBalance) {
-            return true
-        }
+//         if (newBidPrice + amount > bot.maxBalance) {
+//             return true
+//         }
 
-    }
+//     }
 
-    const percent = (amount / bot.maxBalance) * 100;
-    if (bot.notifyAt <= percent) return true
-    return false
-}
+//     const percent = (amount / bot.maxBalance) * 100;
+//     if (bot.notifyAt <= percent) return true
+//     return false
+// }
 
