@@ -2,17 +2,20 @@ import morgan from 'morgan'
 import loginRoute from './routes/loginRoute'
 import userRoutes from './routes/userRoutes'
 import adminRoutes from './routes/adminRoutes'
+import itemRoutes from './routes/itemRoutes'
 import Cors from 'cors'
 import DbConnect from './db/DbConnect'
 import config from 'config'
 import { Auth } from './Middlewares/Auth'
-import { RunBidderBots } from './services/botService'
-
-
+import { RunBotService } from './services/botService'
+import { RunCoreServices, ItemSoldingProcess, createEmailNotification } from './services/CoreServices'
+import { InitSocket } from './services/MySocketIo'
+import easyinvoice from 'easyinvoice'
+import fs from 'fs'
 // ---server instance cretion---
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
+
 
 const app = express();
 // ---Middlewares---
@@ -22,25 +25,17 @@ app.use(express.urlencoded({ extended: false }))
 app.use(Cors());
 app.use(Auth)
 
+// ---server---
+const httpServer = createServer(app);
+InitSocket(httpServer)
+
+
 // --- Routing ---
 app.use("/api/login", loginRoute);
-app.use("/api/user", userRoutes);
-app.use("/api/adm", adminRoutes);
+app.use("/api/items", itemRoutes);
 app.use("*", (req, res) => res.status(404).send("route not found"));
-// ------
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*"
-    }
-});
+// ---------------
 
-// ---socket conn---
-// in future---for live update
-io.on("connection", socket => {
-    io.emit('message', ({ message: "hello" }))
-});
-// -------
 
 const PORT = config.get('Server.port');
 const DbUri = config.get('Database.uri');
@@ -51,9 +46,15 @@ DbConnect(DbUri).then(
         httpServer.listen(PORT)
         console.log(`server running on port ${PORT}`)
 
-        //--start biider bots service---
+        // ---backend services---
         setTimeout(() => {
-            RunBidderBots();
+            // ---bot service---
+            RunBotService();
+            // ItemSoldingProcess()
+            //createEmailNotification()
+            // ====ALERT-DONT DISABLE CORE SERVICES-ALERT====
+            RunCoreServices()
         }, 2000);
+
     }
 )
