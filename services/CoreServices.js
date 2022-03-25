@@ -116,8 +116,8 @@ export const createEmailNotification = (props) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: 'arb7243@gmail.com',
-            pass: 'Za.Xs.cvbnm123'
+            user: '',
+            pass: ''
         },
         tls: {
             rejectUnauthorized: false
@@ -126,7 +126,7 @@ export const createEmailNotification = (props) => {
 
     const mailOptions = {
 
-        from: 'arb7243@gmail.com',
+        from: '',
 
         // Comma Separated list of mails
         to: user.email,
