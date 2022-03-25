@@ -1,15 +1,8 @@
 import express from 'express'
-// import {getById, newBid, toogleAutoBidStatus, updateBot, getbotByUserId } from '../controllers/UserController'
 
 import { create, get, getById, update, del, newBid, getBids, getItemsByUserbids, toogleAutoBidStatus, getbotByUserId, updateBot, getInvoice } from '../controllers/ItemController'
 
 const router = express.Router();
-
-
-
-// router.route("/bids/:id")
-//     .get(getbotByUserId)
-//     .put(updateBot);
 
 router.route("/invoice/:id")
     .get(getInvoice);
