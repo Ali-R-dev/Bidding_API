@@ -1,6 +1,6 @@
-import Mongoose from 'mongoose';
-import { getActiveBots, updateBotByUserId } from '../DAL/biderBotDbOperations';
-import { getById as getItemById, get as getItems, update as updateItem } from '../DAL/itemDbOperations';
+
+import { getActiveBots } from '../DAL/biderBotDbOperations';
+import { getById as getItemById, update as updateItem } from '../DAL/itemDbOperations';
 import { performBid, toogleAutobid, updateAutoBot } from '../services/commonServices'
 import { getUser } from '../DAL/userDbOperations'
 import { createEmailNotification } from './CoreServices'
@@ -122,36 +122,19 @@ const getNextBidPrice = async (bot, currentItem) => {
     }
     return undefined;
 }
-const checkForLimitAlert = () => {
-
-}
-// const createNotificationArray = async (bot, message, code) => {
-
-//     let notifyList = bot.notifications;
-//     if (code == 2) notifyList = notifyList.filter(e => e.typeCode !== 2)
-//     notifyList.unshift({
-//         message: message,
-//         typeCode: code,
-//         time: new Date().toUTCString()
-//     })
-//     await updateBotByUserId(bot.userId, { notifications: notifyList })
-//     return;
-// }
-
-
 
 export const RunBotService = async () => {
 
     let lock = false;
     setInterval(async () => {
-        console.log("--start interval--");
+        // console.log("--start interval--");
         if (lock == false) {
             lock == true
-            console.log("-start Bot-");
+            // console.log("-start Bot-");
             await ExecBidderBots()
-            console.log("-end bot-");
+            // console.log("-end bot-");
             lock = false
         }
-        console.log("--end interval--");
+        // console.log("--end interval--");
     }, 2000);
 }

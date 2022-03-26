@@ -1,5 +1,4 @@
 
-import fs from 'fs'
 import { getBotById, getBotByUserId, getBots, updateBot, updateBotByUserId } from '../DAL/biderBotDbOperations';
 
 import {
@@ -163,8 +162,8 @@ export const deleteItem = async (id, user) => {
         if (!item) return Promise.reject({ msg: "No item found" })
 
         if (!user._id.equals(item.adminId)) return Promise.reject({ msg: "Unauthorized to delete" })
-        
-         if (item.isSoled) return Promise.reject({ msg: "canot delete , item already sold" })
+
+        if (item.isSoled) return Promise.reject({ msg: "canot delete , item already sold" })
 
         if (item.currentBid) return Promise.reject({ msg: "Can not delete,in bidding process" })
 
@@ -219,7 +218,7 @@ export const itemsByUserBids = async (user) => {
 export const performBid = async (itemId, bidAmount, user) => {
 
     try {
-        
+
         if (user.role !== "REG") return Promise.reject("Unauthorized to bid");
         // get current item
         const item = await getById(itemId);
@@ -325,10 +324,8 @@ export const toogleAutobid = async (itemId, setStatus, user) => {
 
     getIo().to(itemId).emit("updatedData")
 
-
     return result;
 }
-
 export const getAllAutoBots = async () => {
     const result = await getBots();
     return result;
@@ -341,25 +338,3 @@ export const updateAutoBot = async (user, bot) => {
     const result = await updateBotByUserId(user._id, bot)
     return result;
 }
-// export const getAutoAlert = async (userId) => {
-
-//     const bot = await getBotByUserId(userId)
-//     let amount = 0;
-
-//     for (const i in ItemIdsForAutoBid) {
-
-//         const itemId = ItemIdsForAutoBid[i];
-
-//         const item = await getItemById(itemId);
-
-//         if (newBidPrice + amount > bot.maxBalance) {
-//             return true
-//         }
-
-//     }
-
-//     const percent = (amount / bot.maxBalance) * 100;
-//     if (bot.notifyAt <= percent) return true
-//     return false
-// }
-

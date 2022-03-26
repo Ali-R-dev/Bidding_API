@@ -1,17 +1,14 @@
 import morgan from 'morgan'
 import loginRoute from './routes/loginRoute'
-import userRoutes from './routes/userRoutes'
-import adminRoutes from './routes/adminRoutes'
 import itemRoutes from './routes/itemRoutes'
 import Cors from 'cors'
 import DbConnect from './db/DbConnect'
 import config from 'config'
 import { Auth } from './Middlewares/Auth'
 import { RunBotService } from './services/botService'
-import { RunCoreServices, ItemSoldingProcess, createEmailNotification } from './services/CoreServices'
+import { RunCoreServices } from './services/CoreServices'
 import { InitSocket } from './services/MySocketIo'
-import easyinvoice from 'easyinvoice'
-import fs from 'fs'
+
 // ---server instance cretion---
 import express from "express";
 import { createServer } from "http";
@@ -50,9 +47,7 @@ DbConnect(DbUri).then(
         setTimeout(() => {
             // ---bot service---
             RunBotService();
-            // ItemSoldingProcess()
-            //createEmailNotification()
-            // ====ALERT-DONT DISABLE CORE SERVICES-ALERT====
+            // ====ALERT--DONT DISABLE CORE SERVICES--ALERT====
             RunCoreServices()
         }, 2000);
 

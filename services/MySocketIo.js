@@ -20,14 +20,6 @@ export const InitSocket = (httpServer) => {
             console.log("room leaved : ", id);
         });
     });
-    // setInterval(() => {
-    //     let rooms = Array.from(io.sockets.adapter.rooms);
-    //     const filtered = rooms.filter((room) => !room[1].has(room[0]));
-    //     const res = filtered.map((i) => i[0]);
-    //     console.log("no of rooms :", res);
-    //     // const n = res.find((r) => r === "123");
-    //     // if (n) io.to("123").emit("updatedData");
-    // }, 2000);
 }
 export const getIo = () => {
     return io;

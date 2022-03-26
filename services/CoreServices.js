@@ -1,8 +1,5 @@
 import { saveInvoice } from '../DAL/InvoiceDbOperations'
-import { getActiveBots, updateBotByUserId } from '../DAL/biderBotDbOperations';
-import { getById as getItemById, get as getItems, update as updateItem } from '../DAL/itemDbOperations';
-import { performBid, toogleAutobid, updateAutoBot } from './commonServices'
-import { getUser } from '../DAL/userDbOperations'
+import { get as getItems, update as updateItem } from '../DAL/itemDbOperations';
 import { getBidById } from '../DAL/bidDbOperations'
 import easyinvoice from 'easyinvoice';
 import fs from 'fs'
@@ -102,12 +99,6 @@ const createInvoice = async (item, user, bid) => {
         }
     })
 
-    // Now this result can be used to save, download or render your invoice
-    // Please review the documentation below on how to do this
-    // easyinvoice.createInvoice(data, function (result) {
-
-    //     fs.writeFileSync(invoice.pdf, pdf, 'base64');
-    // });
 }
 
 export const createEmailNotification = (props) => {
@@ -160,14 +151,14 @@ export const RunCoreServices = async () => {
 
     let lock = false;
     setInterval(async () => {
-        console.log("--start interval--");
+        // console.log("--start interval--");
         if (lock == false) {
             lock == true
-            console.log("-start Bot-");
+            // console.log("-start Bot-");
             await ItemSoldingProcess()
-            console.log("-end bot-");
+            // console.log("-end bot-");
             lock = false
         }
-        console.log("--end interval--");
+        // console.log("--end interval--");
     }, 2000);
 }
